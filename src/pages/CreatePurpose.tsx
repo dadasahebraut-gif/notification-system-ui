@@ -1,83 +1,148 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { getApiUrl } from "../config/api";
-import { 
-  TagIcon, 
+import { API_CONFIG, getApiUrl } from "../config/api";
+import {
+  TagIcon,
   ArrowLeftIcon,
   DevicePhoneMobileIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
 } from "@heroicons/react/24/outline";
+
 import { useAppSelector, useAppDispatch } from "../hooks/redux";
 import { addPurpose, Purpose } from "../store/slices/clientSlice";
 
 interface Variable {
   name: string;
-  type: 'text' | 'number';
+  type: "text" | "number";
   position: number;
 }
 
 const CreatePurpose: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const token = useAppSelector((state) => state.auth.token);
-  const client = useAppSelector((state) => state.client.clientData);
+  const { token, clientId } = useAppSelector((state) => state.auth);
 
-  const [step, setStep] = useState(1); // 1: Medium Selection, 2: Purpose Details
-  const [selectedMedium, setSelectedMedium] = useState<'sms' | 'whatsapp' | ''>('');
-  const [formData, setFormData] = useState({
-    projectId: "",
-    name: "",
-    description: "",
-    templateId: "",
-    language: "en_US",
-    templateType: "utility",
-  });
-  const [variables, setVariables] = useState<Variable[]>([]);
+  const [client, setClient] = useState<any>(null);
+  const [senders, setSenders] = useState<any[]>([]);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [apiResponse, setApiResponse] = useState<any>(null);
-  const [error, setError] = useState("");
+
+  const [step, setStep] = useState(1);
+  const [selectedMedium, setSelectedMedium] = useState<"sms" | "whatsapp" | "">("");
+  // const [showSenderDropdown, setShowSenderDropdown] = useState(false);
+
+
+  const [formData, setFormData] = useState({
+  projectId: "",
+  name: "",
+  description: "",
+  templateId: "",
+  language: "en_US",
+  templateType: "utility",
+  purposeType: "", // add default or empty value
+  senderIds: [] as string[],    // empty array for multiple sender selection
+});
+
+  const [variables, setVariables] = useState<Variable[]>([]);
+
+  // ✅ Fetch client data
+  useEffect(() => {
+    const fetchClientData = async () => {
+      if (!clientId || !token) return;
+
+      try {
+        const response = await fetch(getApiUrl(`/clients/${clientId}`), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+        if (data.status === "success") {
+          setClient(data.data);
+        } else {
+          setError(data.message || "Failed to fetch client data");
+        }
+      } catch (error) {
+        console.error("Error fetching client data:", error);
+        setError("Failed to fetch client data");
+      }
+    };
+
+    fetchClientData();
+  }, [clientId, token]);
+
+  // ✅ Fetch senders when medium or client changes
+  useEffect(() => {
+    if (!selectedMedium || !client?.ID) return;
+
+    const fetchSenders = async () => {
+      try {
+        const res = await fetch(
+         
+        getApiUrl(API_CONFIG.ENDPOINTS.SENDERS+`/filter?client_id=${client.ID}`),
+        );
+        const data = await res.json();
+
+        if (data?.status === "success") {
+          setSenders(data.data || []);
+        } else {
+          console.warn("Failed to fetch senders:", data?.message);
+          setSenders([]);
+        }
+      } catch (err) {
+        console.error("Error fetching senders:", err);
+        setSenders([]);
+      }
+    };
+
+    fetchSenders();
+  }, [selectedMedium, client?.ID]);
 
   const mediumOptions = [
     {
-      id: 'sms' as const,
-      name: 'SMS',
+      id: "sms" as const,
+      name: "SMS",
       icon: <DevicePhoneMobileIcon className="w-6 h-6" />,
-      color: 'from-blue-500 to-cyan-500',
-      description: 'Create SMS purpose'
+      color: "from-blue-500 to-cyan-500",
+      description: "Create SMS template",
     },
     {
-      id: 'whatsapp' as const,
-      name: 'WhatsApp',
+      id: "whatsapp" as const,
+      name: "WhatsApp",
       icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
-      color: 'from-green-500 to-emerald-500',
-      description: 'Create WhatsApp purpose'
-    }
+      color: "from-green-500 to-emerald-500",
+      description: "Create WhatsApp template",
+    },
   ];
 
   const languageOptions = [
-    { code: 'en_US', name: 'English (US)' },
-    { code: 'en_GB', name: 'English (UK)' },
-    { code: 'hi_IN', name: 'Hindi (India)' },
-    { code: 'es_ES', name: 'Spanish (Spain)' },
-    { code: 'fr_FR', name: 'French (France)' },
+    { code: "en_US", name: "English (US)" },
+    { code: "en_GB", name: "English (UK)" },
+    { code: "hi_IN", name: "Hindi (India)" },
+    { code: "es_ES", name: "Spanish (Spain)" },
+    { code: "fr_FR", name: "French (France)" },
   ];
 
   const templateTypeOptions = [
-    { value: 'utility', name: 'Utility' },
-    { value: 'marketing', name: 'Marketing' },
+    { value: "utility", name: "Utility" },
+    { value: "marketing", name: "Marketing" },
   ];
 
-  if (!client || client.Projects.length === 0) {
+  // ✅ Handle client without projects
+  if (!client || !client.Projects || client.Projects.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">
-            You need at least one project to create a purpose
+            You need at least one project to create a template.
           </h2>
           <button
             onClick={() => navigate("/create-project")}
@@ -116,16 +181,15 @@ const CreatePurpose: React.FC = () => {
       setError("Template ID is required");
       return false;
     }
-    
-    // Validate variables for WhatsApp
-    if (selectedMedium === 'whatsapp' && variables.length > 0) {
-      const positions = variables.map(v => v.position);
+
+    if (selectedMedium === "whatsapp" && variables.length > 0) {
+      const positions = variables.map((v) => v.position);
       const uniquePositions = new Set(positions);
       if (positions.length !== uniquePositions.size) {
         setError("Variable positions must be unique");
         return false;
       }
-      
+
       for (const variable of variables) {
         if (!variable.name.trim()) {
           setError("All variable names are required");
@@ -133,15 +197,13 @@ const CreatePurpose: React.FC = () => {
         }
       }
     }
-    
+
     setError("");
     return true;
   };
 
   const nextStep = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-    }
+    if (step === 1 && validateStep1()) setStep(2);
   };
 
   const prevStep = () => {
@@ -152,8 +214,11 @@ const CreatePurpose: React.FC = () => {
   };
 
   const addVariable = () => {
-    const nextPosition = variables.length > 0 ? Math.max(...variables.map(v => v.position)) + 1 : 1;
-    setVariables([...variables, { name: '', type: 'text', position: nextPosition }]);
+    const nextPosition =
+      variables.length > 0
+        ? Math.max(...variables.map((v) => v.position)) + 1
+        : 1;
+    setVariables([...variables, { name: "", type: "text", position: nextPosition }]);
   };
 
   const removeVariable = (index: number) => {
@@ -166,28 +231,25 @@ const CreatePurpose: React.FC = () => {
     setVariables(updated);
   };
 
+  // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateStep2()) return;
-    
+
     setLoading(true);
-
     try {
-      let metadata: any = {
-        medium: selectedMedium
-      };
+      let metadata: any = { medium: selectedMedium };
 
-      if (selectedMedium === 'whatsapp') {
+      if (selectedMedium === "whatsapp") {
         metadata = {
           ...metadata,
           language: { code: formData.language },
-          variables: variables,
-          template_type: formData.templateType
+          variables,
+          template_type: formData.templateType,
         };
       }
 
-      const response = await fetch(getApiUrl("/purposes"), {
+      const response = await fetch(getApiUrl("/purpose"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -198,8 +260,10 @@ const CreatePurpose: React.FC = () => {
           project_id: formData.projectId,
           name: formData.name,
           description: formData.description,
+          sendor_ids: formData.senderIds,
+          type: formData.purposeType,
           template_id: formData.templateId,
-          metadata: JSON.stringify(metadata),
+          metadata,
         }),
       });
 
@@ -209,16 +273,16 @@ const CreatePurpose: React.FC = () => {
       if (data.status === "success") {
         const purpose: Purpose = {
           ...data.data,
-          MetaData: JSON.stringify(metadata)
+          MetaData: JSON.stringify(metadata),
         };
         dispatch(addPurpose({ projectId: formData.projectId, purpose }));
         setTimeout(() => navigate("/dashboard"), 3000);
       } else {
-        setError(data.message || "Failed to create purpose");
+        setError(data.message || "Failed to create template");
       }
     } catch (error) {
-      console.error("Error:", error);
-      setError("Failed to create purpose. Please try again.");
+      console.error("Error creating template:", error);
+      setError("Failed to create template. Please try again.");
     }
     setLoading(false);
   };
@@ -244,10 +308,10 @@ const CreatePurpose: React.FC = () => {
           <TagIcon className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
-          Create New Purpose
+          Create New Template
         </h1>
         <p className="text-gray-400">
-          Define a new notification purpose for your project
+          Define a new notification template for your project
         </p>
       </motion.div>
 
@@ -306,9 +370,13 @@ const CreatePurpose: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-2xl font-bold text-white mb-6">Choose Medium</h2>
-                <p className="text-gray-400 mb-6">Select the communication medium for this purpose</p>
-                
+                <h2 className="text-2xl font-bold text-white mb-6">
+                  Choose Medium
+                </h2>
+                <p className="text-gray-400 mb-6">
+                  Select the communication medium for this template
+                </p>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {mediumOptions.map((medium) => (
                     <motion.div
@@ -323,14 +391,18 @@ const CreatePurpose: React.FC = () => {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-xl bg-gradient-to-r ${medium.color}`}>
+                        <div
+                          className={`p-3 rounded-xl bg-gradient-to-r ${medium.color}`}
+                        >
                           {medium.icon}
                         </div>
                         {selectedMedium === medium.id && (
                           <CheckCircleIcon className="w-6 h-6 text-green-400" />
                         )}
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">{medium.name}</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {medium.name}
+                      </h3>
                       <p className="text-gray-400">{medium.description}</p>
                     </motion.div>
                   ))}
@@ -339,96 +411,184 @@ const CreatePurpose: React.FC = () => {
             )}
 
             {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="text-2xl font-bold text-white mb-6">Purpose Configuration</h2>
-                <p className="text-gray-400 mb-6">Configure your {selectedMedium?.toUpperCase()} purpose</p>
-                
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Select Project *
-                    </label>
-                    <select
-                      required
-                      value={formData.projectId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, projectId: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                    >
-                      <option value="" className="bg-gray-800">
-                        Select a project
-                      </option>
-                      {client.Projects.map((project) => (
-                        <option
-                          key={project.ID}
-                          value={project.ID}
-                          className="bg-gray-800"
-                        >
-                          {project.Name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+  <motion.div
+    key="step2"
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: -20 }}
+  >
+    <h2 className="text-2xl font-bold text-white mb-6">Template Configuration</h2>
+    <p className="text-gray-400 mb-6">
+      Configure your {selectedMedium?.toUpperCase()} template
+    </p>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Purpose Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                      placeholder="e.g., User Registration, Order Confirmation"
-                    />
-                  </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Project Selection */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2">
+          Select Project *
+        </label>
+        <select
+          required
+          value={formData.projectId}
+          onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                     focus:outline-none focus:ring-2 focus:ring-purple-500/50 
+                     focus:border-purple-500/50 transition-all duration-200"
+        >
+          <option value="" className="bg-gray-800">Select a project</option>
+          {client.Projects.map((project) => (
+            <option key={project.ID} value={project.ID} className="bg-gray-800">
+              {project.Name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Description *
-                    </label>
-                    <textarea
-                      required
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 h-32 resize-none"
-                      placeholder="Describe what this purpose is used for and when notifications should be sent..."
-                    />
-                  </div>
+      {/* Purpose Name */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2">
+          Template Name *
+        </label>
+        <input
+          type="text"
+          required
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                     placeholder-gray-400 focus:outline-none focus:ring-2 
+                     focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+          placeholder="e.g., User Registration, Order Confirmation"
+        />
+      </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Template ID *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.templateId}
-                      onChange={(e) =>
-                        setFormData({ ...formData, templateId: e.target.value })
-                      }
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-                      placeholder="Enter template ID"
-                    />
-                  </div>
+      {/* Description */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2">
+          Description *
+        </label>
+        <textarea
+          required
+          value={formData.description}
+          onChange={(e) =>
+            setFormData({ ...formData, description: e.target.value })
+          }
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                     placeholder-gray-400 focus:outline-none focus:ring-2 
+                     focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 
+                     h-32 resize-none"
+          placeholder="Describe what this template is used for and when notifications should be sent..."
+        />
+      </div>
+
+   
+
+
+   {/* 🔹 New Field: Purpose Type (Radio Buttons) */}
+{selectedMedium && (
+  <div>
+    <label className="block text-sm font-semibold text-gray-300 mb-2">
+      Template Type *
+    </label>
+    <div className="flex space-x-6 text-white">
+      {["Promotional", "Transactional"].map((type) => (
+        <label key={type} className="flex items-center space-x-2 cursor-pointer">
+          <input
+            type="radio"
+            name="purposeType"
+            value={type.toLowerCase()}
+            checked={formData.purposeType === type.toLowerCase()}
+            onChange={(e) => {
+              const selectedType = e.target.value;
+              setFormData({
+                ...formData,
+                purposeType: selectedType,
+                senderIds: [], // reset senders on switch
+              });
+            }}
+            className="text-purple-500 focus:ring-purple-500/50 cursor-pointer"
+          />
+          <span>{type}</span>
+        </label>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* 🔹 New Field: Inline Multi-select Senders (Checkbox List) */}
+{selectedMedium && formData.purposeType && (
+  <div className="mt-4">
+    <label className="block text-sm font-semibold text-gray-300 mb-2">
+      Select Senders ({formData.purposeType === "promotional" ? "Promotional" : "Transactional"}) *
+    </label>
+
+    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap gap-3">
+      {senders
+        .filter(
+          (sender: any) =>
+            sender.Type?.toLowerCase() === formData.purposeType.toLowerCase()
+        )
+        .map((sender: any) => (
+          <label
+            key={sender.ID}
+            className={`flex items-center space-x-2 text-sm cursor-pointer rounded-full px-3 py-2 border 
+              ${
+                formData.senderIds?.includes(sender.SenderId)
+                  ? "bg-purple-600/60 border-purple-400 text-white"
+                  : "bg-white/10 border-white/10 text-gray-300 hover:bg-purple-600/30"
+              }`}
+          >
+            <input
+              type="checkbox"
+              checked={formData.senderIds?.includes(sender.SenderId)}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setFormData({
+                  ...formData,
+                  senderIds: isChecked
+                    ? [...(formData.senderIds || []), sender.SenderId]
+                    : formData.senderIds.filter((id) => id !== sender.SenderId),
+                });
+              }}
+              className="text-purple-500 focus:ring-purple-500 cursor-pointer"
+            />
+            <span>{sender.SenderId}</span>
+          </label>
+        ))}
+    </div>
+  </div>
+)}
+
+
+
+
+      {/* Template ID */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-300 mb-2">
+          Template ID *
+        </label>
+        <input
+          type="text"
+          required
+          value={formData.templateId}
+          onChange={(e) =>
+            setFormData({ ...formData, templateId: e.target.value })
+          }
+          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                     placeholder-gray-400 focus:outline-none focus:ring-2 
+                     focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+          placeholder="Enter template ID"
+        />
+      </div>
 
                   {/* WhatsApp specific fields */}
-                  {selectedMedium === 'whatsapp' && (
+                  {selectedMedium === "whatsapp" && (
                     <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 space-y-6">
                       <div className="flex items-center space-x-2 mb-4">
                         <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
-                        <h3 className="text-lg font-semibold text-green-300">WhatsApp Configuration</h3>
+                        <h3 className="text-lg font-semibold text-green-300">
+                          WhatsApp Configuration
+                        </h3>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -438,11 +598,20 @@ const CreatePurpose: React.FC = () => {
                           </label>
                           <select
                             value={formData.language}
-                            onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                language: e.target.value,
+                              })
+                            }
                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
                           >
                             {languageOptions.map((lang) => (
-                              <option key={lang.code} value={lang.code} className="bg-gray-800">
+                              <option
+                                key={lang.code}
+                                value={lang.code}
+                                className="bg-gray-800"
+                              >
                                 {lang.name}
                               </option>
                             ))}
@@ -455,11 +624,20 @@ const CreatePurpose: React.FC = () => {
                           </label>
                           <select
                             value={formData.templateType}
-                            onChange={(e) => setFormData({ ...formData, templateType: e.target.value })}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                templateType: e.target.value,
+                              })
+                            }
                             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
                           >
                             {templateTypeOptions.map((type) => (
-                              <option key={type.value} value={type.value} className="bg-gray-800">
+                              <option
+                                key={type.value}
+                                value={type.value}
+                                className="bg-gray-800"
+                              >
                                 {type.name}
                               </option>
                             ))}
@@ -502,26 +680,48 @@ const CreatePurpose: React.FC = () => {
                                     <input
                                       type="text"
                                       value={variable.name}
-                                      onChange={(e) => updateVariable(index, 'name', e.target.value)}
+                                      onChange={(e) =>
+                                        updateVariable(
+                                          index,
+                                          "name",
+                                          e.target.value
+                                        )
+                                      }
                                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-green-500/50"
                                       placeholder="customer_name"
                                     />
                                   </div>
-                                  
+
                                   <div>
                                     <label className="block text-xs text-gray-400 mb-1">
                                       Type
                                     </label>
                                     <select
                                       value={variable.type}
-                                      onChange={(e) => updateVariable(index, 'type', e.target.value as 'text' | 'number')}
+                                      onChange={(e) =>
+                                        updateVariable(
+                                          index,
+                                          "type",
+                                          e.target.value as "text" | "number"
+                                        )
+                                      }
                                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
                                     >
-                                      <option value="text" className="bg-gray-800">Text</option>
-                                      <option value="number" className="bg-gray-800">Number</option>
+                                      <option
+                                        value="text"
+                                        className="bg-gray-800"
+                                      >
+                                        Text
+                                      </option>
+                                      <option
+                                        value="number"
+                                        className="bg-gray-800"
+                                      >
+                                        Number
+                                      </option>
                                     </select>
                                   </div>
-                                  
+
                                   <div>
                                     <label className="block text-xs text-gray-400 mb-1">
                                       Position
@@ -530,11 +730,17 @@ const CreatePurpose: React.FC = () => {
                                       type="number"
                                       min="1"
                                       value={variable.position}
-                                      onChange={(e) => updateVariable(index, 'position', parseInt(e.target.value))}
+                                      onChange={(e) =>
+                                        updateVariable(
+                                          index,
+                                          "position",
+                                          parseInt(e.target.value)
+                                        )
+                                      }
                                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
                                     />
                                   </div>
-                                  
+
                                   <button
                                     type="button"
                                     onClick={() => removeVariable(index)}
@@ -572,12 +778,12 @@ const CreatePurpose: React.FC = () => {
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-4">
-              Purpose Created Successfully!
+              Template Created Successfully!
             </h2>
 
             <div className="bg-black/20 rounded-xl p-6 mb-6 text-left">
               <h3 className="text-lg font-semibold text-purple-400 mb-3">
-                Purpose Details
+                Template Details
               </h3>
               <div className="space-y-2 text-sm">
                 <div>
@@ -592,9 +798,13 @@ const CreatePurpose: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-gray-400">Medium: </span>
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    selectedMedium === 'sms' ? 'bg-blue-500/20 text-blue-300' : 'bg-green-500/20 text-green-300'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${
+                      selectedMedium === "sms"
+                        ? "bg-blue-500/20 text-blue-300"
+                        : "bg-green-500/20 text-green-300"
+                    }`}
+                  >
                     {selectedMedium?.toUpperCase()}
                   </span>
                 </div>
@@ -661,12 +871,16 @@ const CreatePurpose: React.FC = () => {
                   <motion.div
                     className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                 ) : (
                   <>
                     <TagIcon className="w-5 h-5" />
-                    <span>Create Purpose</span>
+                    <span>Create Template</span>
                   </>
                 )}
               </motion.button>
