@@ -201,7 +201,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
         {/* Configuration Sections */}
         <div className="space-y-6">
           {/* SMS Configuration */}
-          {hasSMS && (
+          {/* {hasSMS && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -245,7 +245,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
                 </div>
               </div>
             </motion.div>
-          )}
+          )} */}
 
           {/* WhatsApp Configuration */}
           {hasWhatsApp && whatsappConfig && (
@@ -336,7 +336,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, index }) => {
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-white flex items-center space-x-2">
                 <TagIcon className="w-5 h-5" />
-                <span>Purposes ({project.purposes.length})</span>
+                <span>Templates ({project.purposes.length})</span>
               </h4>
             </div>
 

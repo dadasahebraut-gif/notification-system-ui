@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../hooks/redux";
-import { loginSuccess } from "../store/slices/authSlice";
+// import { useAppDispatch } from "../hooks/redux";
 import { getApiUrl } from "../config/api";
-import CelebrationAnimation from "../components/CelebrationAnimation";
 import { 
   SparklesIcon, 
   RocketLaunchIcon, 
@@ -65,7 +63,7 @@ const membershipTypes: MembershipType[] = [
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   
   const [step, setStep] = useState(1); // 1: Basic Info, 2: Membership Selection, 3: Plan Selection
   const [formData, setFormData] = useState({
@@ -84,7 +82,7 @@ const Register: React.FC = () => {
   const [plansLoading, setPlansLoading] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [error, setError] = useState("");
-  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  // const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -164,14 +162,14 @@ const Register: React.FC = () => {
     return true;
   };
 
-  const validateStep3 = () => {
-    if (selectedPlans.length === 0) {
-      setError("Please select at least one plan");
-      return false;
-    }
-    setError("");
-    return true;
-  };
+  // const validateStep3 = () => {
+  //   if (selectedPlans.length === 0) {
+  //     setError("Please select at least one plan");
+  //     return false;
+  //   }
+  //   setError("");
+  //   return true;
+  // };
 
   const handleMembershipToggle = (membershipId: string) => {
     setSelectedMemberships(prev => {
@@ -245,7 +243,7 @@ const Register: React.FC = () => {
     event.preventDefault();
     setLoading(true);
     setError("");
-    setValidationErrors([]);
+    // setValidationErrors([]);
     setFieldErrors({});
 
     try {
@@ -299,43 +297,13 @@ const Register: React.FC = () => {
       }
 
       // Step 3: Auto-login
-      const loginResponse = await fetch(getApiUrl('/users/login'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          emailid: formData.email,
-          password: formData.password,
-        }),
-      });
+      // Step 3: Registration complete — redirect user to login page
+      setRegistrationSuccess(true);
 
-      const loginData = await loginResponse.json();
+      // Wait for success animation/message, then redirect
+      navigate('/login');
 
-      if (loginResponse.ok && loginData.token && loginData.clientId) {
-        const tokenPayload = JSON.parse(atob(loginData.token.split('.')[1]));
-        
-        const userData = {
-          user_id: tokenPayload.user_id,
-          email: tokenPayload.email,
-          client_id: tokenPayload.client_id,
-        };
 
-        localStorage.setItem('auth_token', loginData.token);
-        localStorage.setItem('client_id', loginData.clientId);
-        localStorage.setItem('user_data', JSON.stringify(userData));
-        
-        dispatch(loginSuccess({
-          token: loginData.token,
-          clientId: loginData.clientId,
-          user: userData
-        }));
-
-        setRegistrationSuccess(true);
-        setTimeout(() => navigate('/dashboard'), 4000);
-      } else {
-        throw new Error("Auto-login failed. Please login manually.");
-      }
 
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -362,109 +330,7 @@ const Register: React.FC = () => {
   const smsPlans = plans.filter(plan => plan.Channel.toLowerCase() === 'sms');
   const whatsappPlans = plans.filter(plan => plan.Channel.toLowerCase() === 'whatsapp');
 
-  if (registrationSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 relative">
-        <CelebrationAnimation />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full text-center"
-        >
-          {/* Celebration Animation */}
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <motion.div
-              animate={{ 
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mb-6 relative overflow-hidden"
-            >
-              <RocketLaunchIcon className="w-16 h-16 text-white" />
-              
-              {/* Sparkles */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-yellow-300 rounded-full"
-                  initial={{ 
-                    x: 0, 
-                    y: 0, 
-                    scale: 0,
-                    opacity: 0 
-                  }}
-                  animate={{ 
-                    x: Math.cos(i * 45 * Math.PI / 180) * 60,
-                    y: Math.sin(i * 45 * Math.PI / 180) * 60,
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0]
-                  }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                    ease: "easeOut"
-                  }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
-
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
-          >
-            🎉 Welcome to ShauryaNotify! 🎉
-          </motion.h1>
-
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-xl text-gray-300 mb-8"
-          >
-            Your account has been created successfully with your selected membership plans!
-          </motion.p>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 shadow-2xl mb-8"
-          >
-            <h3 className="text-lg font-semibold text-white mb-4">
-              🚀 Launching your dashboard...
-            </h3>
-            
-            <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 4, ease: "easeInOut" }}
-                className="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 h-3 rounded-full"
-              />
-            </div>
-            
-            <p className="text-gray-400 text-sm">
-              Setting up your workspace and activating your plans...
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
-    );
-  }
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8">

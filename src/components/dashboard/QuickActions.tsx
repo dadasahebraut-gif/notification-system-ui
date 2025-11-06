@@ -20,7 +20,7 @@ const QuickActions: React.FC = () => {
     {
       to: "/create-purpose",
       icon: <TagIcon className="w-6 h-6" />,
-      label: "New Purpose",
+      label: "New Template",
       gradient: "from-purple-500 to-pink-500",
       description: "Define notification templates",
     },

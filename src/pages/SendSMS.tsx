@@ -42,6 +42,13 @@ const SendSMS: React.FC = () => {
   const [response, setResponse] = useState<any>(null);
   const [error, setError] = useState("");
 
+  // Normalize backend responses so UI works whether backend sends { status/message } or { error }
+  const responseMessage = response?.error || response?.message || "";
+  const responseIsSuccess =
+    !!response &&
+    (response.status === "success" ||
+      (!response.status && !response.error && !!response.message));
+
   const mediumOptions = [
     {
       id: "sms" as const,
@@ -450,7 +457,7 @@ const SendSMS: React.FC = () => {
                   {availablePurposes.length > 0 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Select Purpose{" "}
+                        Select Template{" "}
                         {selectedMedium === "whatsapp" ? "*" : "(Optional)"}
                       </label>
                       <select
@@ -599,16 +606,15 @@ const SendSMS: React.FC = () => {
             </div>
 
             <h2
-              className={`text-2xl font-bold mb-4 ${
-                response.status === "success"
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
-            >
-              {response.status === "success"
-                ? `${selectedMedium?.toUpperCase()} Sent Successfully!`
-                : `${selectedMedium?.toUpperCase()} Failed to Send`}
-            </h2>
+                className={`text-2xl font-bold mb-4 ${
+                  responseIsSuccess ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {responseIsSuccess
+                  ? `${selectedMedium?.toUpperCase()} Sent Successfully!`
+                  : `${selectedMedium?.toUpperCase()} Failed to Send`}
+              </h2>
+
 
             <div className="bg-black/20 rounded-xl p-6 mb-6 text-left">
               <h3 className="text-lg font-semibold text-gray-300 mb-3">
@@ -627,10 +633,15 @@ const SendSMS: React.FC = () => {
                     {response.status}
                   </span>
                 </div>
-                <div>
-                  <span className="text-gray-400">Message: </span>
-                  <span className="text-white">{response.message}</span>
-                </div>
+                <div className="flex items-center space-x-2">
+                <span className="text-gray-400 font-semibold">Message:</span>
+                <span className="text-red-500 font-bold text-l">
+                  {responseMessage || "No response message"}
+                </span>
+              </div>
+
+
+
                 {response.data && (
                   <div>
                     <span className="text-gray-400">Data: </span>

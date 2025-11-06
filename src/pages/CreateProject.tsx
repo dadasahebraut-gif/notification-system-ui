@@ -54,7 +54,7 @@ const CreateProject: React.FC = () => {
   const [selectedMediums, setSelectedMediums] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     projectName: "",
-    senderId: "",
+    // senderId: "",
     phoneNumberId: "",
     accessToken: "",
   });
@@ -122,10 +122,10 @@ const CreateProject: React.FC = () => {
       return false;
     }
 
-    if (selectedMediums.includes("sms") && !formData.senderId.trim()) {
-      setError("Sender ID is required for SMS");
-      return false;
-    }
+    // if (selectedMediums.includes("sms") && !formData.senderId.trim()) {
+    //   setError("Sender ID is required for SMS");
+    //   return false;
+    // }
 
     if (selectedMediums.includes("whatsapp")) {
       if (!formData.phoneNumberId.trim()) {
@@ -205,7 +205,7 @@ const CreateProject: React.FC = () => {
           ClientID: client.ID,
           Name: formData.projectName,
           APIKey: data.data.api_key,
-          SenderId: formData.senderId || null,
+          // SenderId: formData.senderId || null,
           MetaData: metadata,
           IsActive: true,
           CreatedAt: data.data.created_at,
@@ -380,7 +380,7 @@ const CreateProject: React.FC = () => {
                     />
                   </div>
 
-                  {/* SMS Configuration */}
+                  {/* SMS Configuration
                   {selectedMediums.includes("sms") && (
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6">
                       <div className="flex items-center space-x-2 mb-4">
@@ -409,7 +409,7 @@ const CreateProject: React.FC = () => {
                         />
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {/* WhatsApp Configuration */}
                   {selectedMediums.includes("whatsapp") && (

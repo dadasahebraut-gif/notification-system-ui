@@ -26,16 +26,24 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
   const daysRemaining = Math.ceil(
     (validTill.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
-  let expiryStatus = "";
-  if (daysRemaining <= 7 || quotaPercentage >= 90) {
-    if (daysRemaining <= 0 || quotaPercentage >= 100) {
-      expiryStatus = "Expired";
-    } else if (daysRemaining <= 7 || quotaPercentage >= 90) {
-      expiryStatus = "Expiring Soon";
-    }
-  } else {
-    expiryStatus = "Active";
-  }
+          let expiryStatus = "";
+
+        if (
+          membership.Status?.toLowerCase() === "active" &&
+          (daysRemaining <= 7 || quotaPercentage >= 90)
+        ) {
+          if (daysRemaining <= 0 || quotaPercentage >= 100) {
+            expiryStatus = "Expired";
+          } else {
+            expiryStatus = "Expiring Soon";
+          }
+        } else {
+          expiryStatus = membership.Status
+            ? membership.Status.charAt(0).toUpperCase() + membership.Status.slice(1).toLowerCase()
+            : "Unknown";
+        }
+
+
 
   const channelColor =
     membership.Plan?.Channel?.toLowerCase() === "sms"
@@ -113,10 +121,18 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
               animate={{ scale: 1 }}
               transition={{ delay: 0.2 + index * 0.1, type: "spring" }}
               className={`px-4 py-2 rounded-full text-sm font-semibold border ${
-                expiryStatus.toLowerCase() === "active"
-                  ? "bg-green-500/20 text-green-300 border-green-500/30"
-                  : "bg-red-500/20 text-red-300 border-red-500/30"
-              }`}
+              expiryStatus.toLowerCase() === "active"
+                ? "bg-green-500/20 text-green-300 border-green-500/30"
+                : expiryStatus.toLowerCase() === "requested"
+                ? "bg-yellow-500/20 text-yellow-300 border-yellow-500/30"
+                : expiryStatus.toLowerCase() === "rejected"
+                ? "bg-red-500/20 text-red-300 border-red-500/30"
+                : expiryStatus.toLowerCase() === "expired"
+                ? "bg-gray-500/20 text-gray-300 border-gray-500/30"
+                : "bg-orange-500/20 text-orange-300 border-orange-500/30"
+            }`}
+
+
             >
               {expiryStatus}
             </motion.span>
@@ -202,22 +218,24 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
         </div>
 
         {/* Validity */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-2">
-            <CalendarIcon className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-400">Valid Till</span>
+        {!["requested", "rejected"].includes(expiryStatus.toLowerCase()) && (
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <CalendarIcon className="w-4 h-4 text-gray-400" />
+              <span className="text-sm text-gray-400">Valid Till</span>
+            </div>
+            <span
+              className={`text-sm font-semibold ${
+                daysRemaining <= 7 ? "text-orange-400" : "text-white"
+              }`}
+            >
+              {validTill.toLocaleDateString()} ({daysRemaining} days)
+            </span>
           </div>
-          <span
-            className={`text-sm font-semibold ${
-              daysRemaining <= 7 ? "text-orange-400" : "text-white"
-            }`}
-          >
-            {validTill.toLocaleDateString()} ({daysRemaining} days)
-          </span>
-        </div>
+        )}
 
         {/* Action Button */}
-        {expiryStatus !== "Active" && (
+        {(expiryStatus === "Expired" || expiryStatus === "Expiring Soon") && (
           <Link to="/create-membership">
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -229,6 +247,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({
             </motion.button>
           </Link>
         )}
+
       </div>
     </motion.div>
   );

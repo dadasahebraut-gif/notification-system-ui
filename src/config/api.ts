@@ -13,6 +13,8 @@ export const API_CONFIG = {
     LOGIN: "/users/login",
     PLANS: "/plans",
     MEMBERSHIP: "/membership",
+    CAMPAIGN : "/campaign",
+    SENDERS: "/senders",
   },
 };
 

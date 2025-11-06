@@ -60,13 +60,20 @@ const Login: React.FC = () => {
         
         navigate('/dashboard');
       } else {
-        setError(data.message || 'Invalid email or password. Please try again.');
+  // Show the actual error message from backend
+      const backendError =
+        data.error || data.message || "Something went wrong. Try again.";
+      setError(backendError);
+}
+    } catch (error: unknown) {
+        console.error("Login error:", error);
+
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Login failed. Please check your connection and try again.");
+        }
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Login failed. Please check your connection and try again.');
-    }
-    
     setLoading(false);
   };
 
