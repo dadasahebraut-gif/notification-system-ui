@@ -33,21 +33,21 @@ const CreatePurpose: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [apiResponse, setApiResponse] = useState<any>(null);
 
-  const [step, setStep] = useState(1);
-  const [selectedMedium, setSelectedMedium] = useState<"sms" | "whatsapp" | "">("");
+  const [selectedMedium, setSelectedMedium] = useState<"sms" | "whatsapp" | "">(
+    ""
+  );
   // const [showSenderDropdown, setShowSenderDropdown] = useState(false);
 
-
   const [formData, setFormData] = useState({
-  projectId: "",
-  name: "",
-  description: "",
-  templateId: "",
-  language: "en_US",
-  templateType: "utility",
-  purposeType: "", // add default or empty value
-  senderIds: [] as string[],    // empty array for multiple sender selection
-});
+    projectId: "",
+    name: "",
+    description: "",
+    templateId: "",
+    language: "en_US",
+    templateType: "utility",
+    purposeType: "", // add default or empty value
+    senderIds: [] as string[], // empty array for multiple sender selection
+  });
 
   const [variables, setVariables] = useState<Variable[]>([]);
 
@@ -86,8 +86,9 @@ const CreatePurpose: React.FC = () => {
     const fetchSenders = async () => {
       try {
         const res = await fetch(
-         
-        getApiUrl(API_CONFIG.ENDPOINTS.SENDERS+`/filter?client_id=${client.ID}`),
+          getApiUrl(
+            API_CONFIG.ENDPOINTS.SENDERS + `/filter?client_id=${client.ID}`
+          )
         );
         const data = await res.json();
 
@@ -105,23 +106,6 @@ const CreatePurpose: React.FC = () => {
 
     fetchSenders();
   }, [selectedMedium, client?.ID]);
-
-  const mediumOptions = [
-    {
-      id: "sms" as const,
-      name: "SMS",
-      icon: <DevicePhoneMobileIcon className="w-6 h-6" />,
-      color: "from-blue-500 to-cyan-500",
-      description: "Create SMS template",
-    },
-    {
-      id: "whatsapp" as const,
-      name: "WhatsApp",
-      icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
-      color: "from-green-500 to-emerald-500",
-      description: "Create WhatsApp template",
-    },
-  ];
 
   const languageOptions = [
     { code: "en_US", name: "English (US)" },
@@ -155,16 +139,11 @@ const CreatePurpose: React.FC = () => {
     );
   }
 
-  const validateStep1 = () => {
+  const validateForm = () => {
     if (!selectedMedium) {
       setError("Please select a medium (SMS or WhatsApp)");
       return false;
     }
-    setError("");
-    return true;
-  };
-
-  const validateStep2 = () => {
     if (!formData.projectId) {
       setError("Please select a project");
       return false;
@@ -202,23 +181,15 @@ const CreatePurpose: React.FC = () => {
     return true;
   };
 
-  const nextStep = () => {
-    if (step === 1 && validateStep1()) setStep(2);
-  };
-
-  const prevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
-      setError("");
-    }
-  };
-
   const addVariable = () => {
     const nextPosition =
       variables.length > 0
         ? Math.max(...variables.map((v) => v.position)) + 1
         : 1;
-    setVariables([...variables, { name: "", type: "text", position: nextPosition }]);
+    setVariables([
+      ...variables,
+      { name: "", type: "text", position: nextPosition },
+    ]);
   };
 
   const removeVariable = (index: number) => {
@@ -234,7 +205,7 @@ const CreatePurpose: React.FC = () => {
   // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateStep2()) return;
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -315,36 +286,6 @@ const CreatePurpose: React.FC = () => {
         </p>
       </motion.div>
 
-      {/* Progress Steps */}
-      <div className="flex items-center justify-center mb-8">
-        {[1, 2].map((stepNum) => (
-          <div key={stepNum} className="flex items-center">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
-                step >= stepNum
-                  ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                  : "bg-gray-700 text-gray-400"
-              }`}
-            >
-              {step > stepNum ? (
-                <CheckCircleIcon className="w-6 h-6" />
-              ) : (
-                stepNum
-              )}
-            </div>
-            {stepNum < 2 && (
-              <div
-                className={`w-16 h-1 mx-2 transition-all duration-300 ${
-                  step > stepNum
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500"
-                    : "bg-gray-700"
-                }`}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -363,402 +304,413 @@ const CreatePurpose: React.FC = () => {
 
         {!apiResponse ? (
           <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="text-2xl font-bold text-white mb-6">
-                  Choose Medium
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  Select the communication medium for this template
-                </p>
+            (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Template Configuration
+              </h2>
+              <p className="text-gray-400 mb-6">
+                Configure your notification template
+              </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mediumOptions.map((medium) => (
-                    <motion.div
-                      key={medium.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setSelectedMedium(medium.id)}
-                      className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
-                        selectedMedium === medium.id
-                          ? `border-transparent bg-gradient-to-r ${medium.color} bg-opacity-20`
-                          : "border-white/10 bg-white/5 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div
-                          className={`p-3 rounded-xl bg-gradient-to-r ${medium.color}`}
-                        >
-                          {medium.icon}
-                        </div>
-                        {selectedMedium === medium.id && (
-                          <CheckCircleIcon className="w-6 h-6 text-green-400" />
-                        )}
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {medium.name}
-                      </h3>
-                      <p className="text-gray-400">{medium.description}</p>
-                    </motion.div>
-                  ))}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Medium Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    Select Medium *
+                  </label>
+                  <div className="flex items-center space-x-6">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medium"
+                        value="sms"
+                        checked={selectedMedium === "sms"}
+                        onChange={(e) =>
+                          setSelectedMedium(e.target.value as "sms")
+                        }
+                        className="w-4 h-4 text-purple-500 focus:ring-purple-500/50 border-gray-600 bg-gray-700"
+                      />
+                      <DevicePhoneMobileIcon className="w-5 h-5 text-blue-400" />
+                      <span className="text-white">SMS</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medium"
+                        value="whatsapp"
+                        checked={selectedMedium === "whatsapp"}
+                        onChange={(e) =>
+                          setSelectedMedium(e.target.value as "whatsapp")
+                        }
+                        className="w-4 h-4 text-purple-500 focus:ring-purple-500/50 border-gray-600 bg-gray-700"
+                      />
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
+                      <span className="text-white">WhatsApp</span>
+                    </label>
+                  </div>
                 </div>
-              </motion.div>
-            )}
-
-            {step === 2 && (
-  <motion.div
-    key="step2"
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-  >
-    <h2 className="text-2xl font-bold text-white mb-6">Template Configuration</h2>
-    <p className="text-gray-400 mb-6">
-      Configure your {selectedMedium?.toUpperCase()} template
-    </p>
-
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Project Selection */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-2">
-          Select Project *
-        </label>
-        <select
-          required
-          value={formData.projectId}
-          onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                {/* Project Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Select Project *
+                  </label>
+                  <select
+                    required
+                    value={formData.projectId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, projectId: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
                      focus:outline-none focus:ring-2 focus:ring-purple-500/50 
                      focus:border-purple-500/50 transition-all duration-200"
-        >
-          <option value="" className="bg-gray-800">Select a project</option>
-          {client.Projects.map((project) => (
-            <option key={project.ID} value={project.ID} className="bg-gray-800">
-              {project.Name}
-            </option>
-          ))}
-        </select>
-      </div>
+                  >
+                    <option value="" className="bg-gray-800">
+                      Select a project
+                    </option>
+                    {client.Projects.map((project) => (
+                      <option
+                        key={project.ID}
+                        value={project.ID}
+                        className="bg-gray-800"
+                      >
+                        {project.Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-      {/* Purpose Name */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-2">
-          Template Name *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                {/* Purpose Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Template Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-          placeholder="e.g., User Registration, Order Confirmation"
-        />
-      </div>
+                    placeholder="e.g., User Registration, Order Confirmation"
+                  />
+                </div>
 
-      {/* Description */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-2">
-          Description *
-        </label>
-        <textarea
-          required
-          value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Description *
+                  </label>
+                  <textarea
+                    required
+                    value={formData.description}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 
                      h-32 resize-none"
-          placeholder="Describe what this template is used for and when notifications should be sent..."
-        />
-      </div>
+                    placeholder="Describe what this template is used for and when notifications should be sent..."
+                  />
+                </div>
 
-   
+                {/* 🔹 New Field: Purpose Type (Radio Buttons) */}
+                {selectedMedium && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      Template Type *
+                    </label>
+                    <div className="flex space-x-6 text-white">
+                      {["Promotional", "Transactional"].map((type) => (
+                        <label
+                          key={type}
+                          className="flex items-center space-x-2 cursor-pointer"
+                        >
+                          <input
+                            type="radio"
+                            name="purposeType"
+                            value={type.toLowerCase()}
+                            checked={
+                              formData.purposeType === type.toLowerCase()
+                            }
+                            onChange={(e) => {
+                              const selectedType = e.target.value;
+                              setFormData({
+                                ...formData,
+                                purposeType: selectedType,
+                                senderIds: [], // reset senders on switch
+                              });
+                            }}
+                            className="text-purple-500 focus:ring-purple-500/50 cursor-pointer"
+                          />
+                          <span>{type}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
+                {/* 🔹 New Field: Inline Multi-select Senders (Checkbox List) */}
+                {selectedMedium && formData.purposeType && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                      Select Senders (
+                      {formData.purposeType === "promotional"
+                        ? "Promotional"
+                        : "Transactional"}
+                      ) *
+                    </label>
 
-   {/* 🔹 New Field: Purpose Type (Radio Buttons) */}
-{selectedMedium && (
-  <div>
-    <label className="block text-sm font-semibold text-gray-300 mb-2">
-      Template Type *
-    </label>
-    <div className="flex space-x-6 text-white">
-      {["Promotional", "Transactional"].map((type) => (
-        <label key={type} className="flex items-center space-x-2 cursor-pointer">
-          <input
-            type="radio"
-            name="purposeType"
-            value={type.toLowerCase()}
-            checked={formData.purposeType === type.toLowerCase()}
-            onChange={(e) => {
-              const selectedType = e.target.value;
-              setFormData({
-                ...formData,
-                purposeType: selectedType,
-                senderIds: [], // reset senders on switch
-              });
-            }}
-            className="text-purple-500 focus:ring-purple-500/50 cursor-pointer"
-          />
-          <span>{type}</span>
-        </label>
-      ))}
-    </div>
-  </div>
-)}
-
-{/* 🔹 New Field: Inline Multi-select Senders (Checkbox List) */}
-{selectedMedium && formData.purposeType && (
-  <div className="mt-4">
-    <label className="block text-sm font-semibold text-gray-300 mb-2">
-      Select Senders ({formData.purposeType === "promotional" ? "Promotional" : "Transactional"}) *
-    </label>
-
-    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap gap-3">
-      {senders
-        .filter(
-          (sender: any) =>
-            sender.Type?.toLowerCase() === formData.purposeType.toLowerCase()
-        )
-        .map((sender: any) => (
-          <label
-            key={sender.ID}
-            className={`flex items-center space-x-2 text-sm cursor-pointer rounded-full px-3 py-2 border 
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap gap-3">
+                      {senders
+                        .filter(
+                          (sender: any) =>
+                            sender.Type?.toLowerCase() ===
+                            formData.purposeType.toLowerCase()
+                        )
+                        .map((sender: any) => (
+                          <label
+                            key={sender.ID}
+                            className={`flex items-center space-x-2 text-sm cursor-pointer rounded-full px-3 py-2 border 
               ${
                 formData.senderIds?.includes(sender.SenderId)
                   ? "bg-purple-600/60 border-purple-400 text-white"
                   : "bg-white/10 border-white/10 text-gray-300 hover:bg-purple-600/30"
               }`}
-          >
-            <input
-              type="checkbox"
-              checked={formData.senderIds?.includes(sender.SenderId)}
-              onChange={(e) => {
-                const isChecked = e.target.checked;
-                setFormData({
-                  ...formData,
-                  senderIds: isChecked
-                    ? [...(formData.senderIds || []), sender.SenderId]
-                    : formData.senderIds.filter((id) => id !== sender.SenderId),
-                });
-              }}
-              className="text-purple-500 focus:ring-purple-500 cursor-pointer"
-            />
-            <span>{sender.SenderId}</span>
-          </label>
-        ))}
-    </div>
-  </div>
-)}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.senderIds?.includes(
+                                sender.SenderId
+                              )}
+                              onChange={(e) => {
+                                const isChecked = e.target.checked;
+                                setFormData({
+                                  ...formData,
+                                  senderIds: isChecked
+                                    ? [
+                                        ...(formData.senderIds || []),
+                                        sender.SenderId,
+                                      ]
+                                    : formData.senderIds.filter(
+                                        (id) => id !== sender.SenderId
+                                      ),
+                                });
+                              }}
+                              className="text-purple-500 focus:ring-purple-500 cursor-pointer"
+                            />
+                            <span>{sender.SenderId}</span>
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
-
-
-
-      {/* Template ID */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-300 mb-2">
-          Template ID *
-        </label>
-        <input
-          type="text"
-          required
-          value={formData.templateId}
-          onChange={(e) =>
-            setFormData({ ...formData, templateId: e.target.value })
-          }
-          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
+                {/* Template ID */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Template ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.templateId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, templateId: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white 
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-          placeholder="Enter template ID"
-        />
-      </div>
+                    placeholder="Enter template ID"
+                  />
+                </div>
 
-                  {/* WhatsApp specific fields */}
-                  {selectedMedium === "whatsapp" && (
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 space-y-6">
-                      <div className="flex items-center space-x-2 mb-4">
-                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
-                        <h3 className="text-lg font-semibold text-green-300">
-                          WhatsApp Configuration
-                        </h3>
-                      </div>
+                {/* WhatsApp specific fields */}
+                {selectedMedium === "whatsapp" && (
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 space-y-6">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
+                      <h3 className="text-lg font-semibold text-green-300">
+                        WhatsApp Configuration
+                      </h3>
+                    </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
-                            Language *
-                          </label>
-                          <select
-                            value={formData.language}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                language: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
-                          >
-                            {languageOptions.map((lang) => (
-                              <option
-                                key={lang.code}
-                                value={lang.code}
-                                className="bg-gray-800"
-                              >
-                                {lang.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-300 mb-2">
-                            Template Type *
-                          </label>
-                          <select
-                            value={formData.templateType}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                templateType: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
-                          >
-                            {templateTypeOptions.map((type) => (
-                              <option
-                                key={type.value}
-                                value={type.value}
-                                className="bg-gray-800"
-                              >
-                                {type.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Variables Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <label className="text-sm font-semibold text-gray-300">
-                            Variables (Optional)
-                          </label>
-                          <motion.button
-                            type="button"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={addVariable}
-                            className="px-3 py-2 bg-green-500/20 text-green-300 rounded-lg flex items-center space-x-2 text-sm"
-                          >
-                            <PlusIcon className="w-4 h-4" />
-                            <span>Add Variable</span>
-                          </motion.button>
-                        </div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Language *
+                        </label>
+                        <select
+                          value={formData.language}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              language: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
+                        >
+                          {languageOptions.map((lang) => (
+                            <option
+                              key={lang.code}
+                              value={lang.code}
+                              className="bg-gray-800"
+                            >
+                              {lang.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                        {variables.length > 0 && (
-                          <div className="space-y-4">
-                            {variables.map((variable, index) => (
-                              <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-black/20 rounded-xl p-4 border border-green-500/10"
-                              >
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                  <div>
-                                    <label className="block text-xs text-gray-400 mb-1">
-                                      Variable Name
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={variable.name}
-                                      onChange={(e) =>
-                                        updateVariable(
-                                          index,
-                                          "name",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-green-500/50"
-                                      placeholder="customer_name"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-xs text-gray-400 mb-1">
-                                      Type
-                                    </label>
-                                    <select
-                                      value={variable.type}
-                                      onChange={(e) =>
-                                        updateVariable(
-                                          index,
-                                          "type",
-                                          e.target.value as "text" | "number"
-                                        )
-                                      }
-                                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
-                                    >
-                                      <option
-                                        value="text"
-                                        className="bg-gray-800"
-                                      >
-                                        Text
-                                      </option>
-                                      <option
-                                        value="number"
-                                        className="bg-gray-800"
-                                      >
-                                        Number
-                                      </option>
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-xs text-gray-400 mb-1">
-                                      Position
-                                    </label>
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      value={variable.position}
-                                      onChange={(e) =>
-                                        updateVariable(
-                                          index,
-                                          "position",
-                                          parseInt(e.target.value)
-                                        )
-                                      }
-                                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
-                                    />
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => removeVariable(index)}
-                                    className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                                  >
-                                    <TrashIcon className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </div>
-                        )}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Template Type *
+                        </label>
+                        <select
+                          value={formData.templateType}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              templateType: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
+                        >
+                          {templateTypeOptions.map((type) => (
+                            <option
+                              key={type.value}
+                              value={type.value}
+                              className="bg-gray-800"
+                            >
+                              {type.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
-                  )}
-                </form>
-              </motion.div>
-            )}
+
+                    {/* Variables Section */}
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="text-sm font-semibold text-gray-300">
+                          Variables (Optional)
+                        </label>
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={addVariable}
+                          className="px-3 py-2 bg-green-500/20 text-green-300 rounded-lg flex items-center space-x-2 text-sm"
+                        >
+                          <PlusIcon className="w-4 h-4" />
+                          <span>Add Variable</span>
+                        </motion.button>
+                      </div>
+
+                      {variables.length > 0 && (
+                        <div className="space-y-4">
+                          {variables.map((variable, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-black/20 rounded-xl p-4 border border-green-500/10"
+                            >
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div>
+                                  <label className="block text-xs text-gray-400 mb-1">
+                                    Variable Name
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={variable.name}
+                                    onChange={(e) =>
+                                      updateVariable(
+                                        index,
+                                        "name",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-green-500/50"
+                                    placeholder="customer_name"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs text-gray-400 mb-1">
+                                    Type
+                                  </label>
+                                  <select
+                                    value={variable.type}
+                                    onChange={(e) =>
+                                      updateVariable(
+                                        index,
+                                        "type",
+                                        e.target.value as "text" | "number"
+                                      )
+                                    }
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
+                                  >
+                                    <option
+                                      value="text"
+                                      className="bg-gray-800"
+                                    >
+                                      Text
+                                    </option>
+                                    <option
+                                      value="number"
+                                      className="bg-gray-800"
+                                    >
+                                      Number
+                                    </option>
+                                  </select>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs text-gray-400 mb-1">
+                                    Position
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={variable.position}
+                                    onChange={(e) =>
+                                      updateVariable(
+                                        index,
+                                        "position",
+                                        parseInt(e.target.value)
+                                      )
+                                    }
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500/50"
+                                  />
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeVariable(index)}
+                                  className="px-3 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                                >
+                                  <TrashIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </form>
+            </motion.div>
+            )
           </AnimatePresence>
         ) : (
           <motion.div
@@ -841,50 +793,33 @@ const CreatePurpose: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Navigation Buttons */}
+        {/* Submit Button */}
         {!apiResponse && (
-          <div className="flex justify-between mt-8">
-            <button
-              onClick={prevStep}
-              disabled={step === 1}
-              className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          <div className="mt-8">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              Previous
-            </button>
-
-            {step < 2 ? (
-              <button
-                onClick={nextStep}
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 transition-colors"
-              >
-                Next
-              </button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSubmit}
-                disabled={loading}
-                className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <motion.div
-                    className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                ) : (
-                  <>
-                    <TagIcon className="w-5 h-5" />
-                    <span>Create Template</span>
-                  </>
-                )}
-              </motion.button>
-            )}
+              {loading ? (
+                <motion.div
+                  className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              ) : (
+                <>
+                  <TagIcon className="w-5 h-5" />
+                  <span>Create Template</span>
+                </>
+              )}
+            </motion.button>
           </div>
         )}
       </motion.div>

@@ -9,9 +9,6 @@ import {
   ArrowLeftIcon,
   DevicePhoneMobileIcon,
   ChatBubbleLeftRightIcon,
-  CheckCircleIcon,
-  PlusIcon,
-  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 interface Variable {
@@ -25,7 +22,6 @@ const SendSMS: React.FC = () => {
   const { token } = useAppSelector((state) => state.auth);
   const { clientData } = useAppSelector((state) => state.client);
 
-  const [step, setStep] = useState(1); // 1: Medium Selection, 2: Message Details
   const [selectedMedium, setSelectedMedium] = useState<"sms" | "whatsapp" | "">(
     ""
   );
@@ -48,23 +44,6 @@ const SendSMS: React.FC = () => {
     !!response &&
     (response.status === "success" ||
       (!response.status && !response.error && !!response.message));
-
-  const mediumOptions = [
-    {
-      id: "sms" as const,
-      name: "SMS",
-      icon: <DevicePhoneMobileIcon className="w-6 h-6" />,
-      color: "from-blue-500 to-cyan-500",
-      description: "Send SMS notifications",
-    },
-    {
-      id: "whatsapp" as const,
-      name: "WhatsApp",
-      icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
-      color: "from-green-500 to-emerald-500",
-      description: "Send WhatsApp messages",
-    },
-  ];
 
   if (!clientData || !clientData.Projects || clientData.Projects.length === 0) {
     return (
@@ -121,16 +100,11 @@ const SendSMS: React.FC = () => {
       })()
     : [];
 
-  const validateStep1 = () => {
+  const validateForm = () => {
     if (!selectedMedium) {
       setError("Please select a medium (SMS or WhatsApp)");
       return false;
     }
-    setError("");
-    return true;
-  };
-
-  const validateStep2 = () => {
     if (!formData.projectId) {
       setError("Please select a project");
       return false;
@@ -170,31 +144,10 @@ const SendSMS: React.FC = () => {
     return true;
   };
 
-  const nextStep = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
-      // Reset form when medium changes
-      setFormData((prev) => ({
-        ...prev,
-        projectId: "",
-        purposeId: "",
-        message: "",
-      }));
-      setVariableValues({});
-    }
-  };
-
-  const prevStep = () => {
-    if (step > 1) {
-      setStep(step - 1);
-      setError("");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateStep2()) return;
+    if (!validateForm()) return;
 
     setLoading(true);
 
@@ -253,7 +206,6 @@ const SendSMS: React.FC = () => {
   };
 
   const resetForm = () => {
-    setStep(1);
     setSelectedMedium("");
     setFormData({ projectId: "", purposeId: "", mobile: "", message: "" });
     setVariableValues({});
@@ -287,38 +239,6 @@ const SendSMS: React.FC = () => {
         <p className="text-gray-400">Send notifications using your API</p>
       </motion.div>
 
-      {/* Progress Steps */}
-      {!response && (
-        <div className="flex items-center justify-center mb-8">
-          {[1, 2].map((stepNum) => (
-            <div key={stepNum} className="flex items-center">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
-                  step >= stepNum
-                    ? "bg-gradient-to-r from-orange-500 to-red-500 text-white"
-                    : "bg-gray-700 text-gray-400"
-                }`}
-              >
-                {step > stepNum ? (
-                  <CheckCircleIcon className="w-6 h-6" />
-                ) : (
-                  stepNum
-                )}
-              </div>
-              {stepNum < 2 && (
-                <div
-                  className={`w-16 h-1 mx-2 transition-all duration-300 ${
-                    step > stepNum
-                      ? "bg-gradient-to-r from-orange-500 to-red-500"
-                      : "bg-gray-700"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -337,246 +257,245 @@ const SendSMS: React.FC = () => {
 
         {!response ? (
           <AnimatePresence mode="wait">
-            {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="text-2xl font-bold text-white mb-6">
-                  Choose Medium
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  Select how you want to send your message
-                </p>
+            (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Send Message
+              </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mediumOptions.map((medium) => (
-                    <motion.div
-                      key={medium.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setSelectedMedium(medium.id)}
-                      className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
-                        selectedMedium === medium.id
-                          ? `border-transparent bg-gradient-to-r ${medium.color} bg-opacity-20`
-                          : "border-white/10 bg-white/5 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div
-                          className={`p-3 rounded-xl bg-gradient-to-r ${medium.color}`}
-                        >
-                          {medium.icon}
-                        </div>
-                        {selectedMedium === medium.id && (
-                          <CheckCircleIcon className="w-6 h-6 text-green-400" />
-                        )}
-                      </div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {medium.name}
-                      </h3>
-                      <p className="text-gray-400">{medium.description}</p>
-                    </motion.div>
-                  ))}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Medium Selection */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    Select Medium *
+                  </label>
+                  <div className="flex items-center space-x-6">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medium"
+                        value="sms"
+                        checked={selectedMedium === "sms"}
+                        onChange={(e) => {
+                          setSelectedMedium(e.target.value as "sms");
+                          setFormData({
+                            projectId: "",
+                            purposeId: "",
+                            mobile: "",
+                            message: "",
+                          });
+                          setVariableValues({});
+                        }}
+                        className="w-4 h-4 text-orange-500 focus:ring-orange-500/50 border-gray-600 bg-gray-700"
+                      />
+                      <DevicePhoneMobileIcon className="w-5 h-5 text-blue-400" />
+                      <span className="text-white">SMS</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="medium"
+                        value="whatsapp"
+                        checked={selectedMedium === "whatsapp"}
+                        onChange={(e) => {
+                          setSelectedMedium(e.target.value as "whatsapp");
+                          setFormData({
+                            projectId: "",
+                            purposeId: "",
+                            mobile: "",
+                            message: "",
+                          });
+                          setVariableValues({});
+                        }}
+                        className="w-4 h-4 text-orange-500 focus:ring-orange-500/50 border-gray-600 bg-gray-700"
+                      />
+                      <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
+                      <span className="text-white">WhatsApp</span>
+                    </label>
+                  </div>
                 </div>
-              </motion.div>
-            )}
+                {/* Project Select */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Select Project *
+                  </label>
+                  <select
+                    required
+                    value={formData.projectId}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        projectId: e.target.value,
+                        purposeId: "",
+                      })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
+                  >
+                    <option value="" className="bg-gray-800">
+                      Select a project
+                    </option>
+                    {clientData.Projects.map((project) => (
+                      <option
+                        key={project.ID}
+                        value={project.ID}
+                        className="bg-gray-800"
+                      >
+                        {project.Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="text-2xl font-bold text-white mb-6">
-                  Send {selectedMedium?.toUpperCase()} Message
-                </h2>
+                {/* Project Details */}
+                {selectedProject && (
+                  <div className="bg-black/20 rounded-xl p-4 border border-orange-500/20">
+                    <h3 className="text-sm font-semibold text-orange-300 mb-2">
+                      Selected Project Details
+                    </h3>
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        <span className="text-gray-400">Project: </span>
+                        <span className="text-white">
+                          {selectedProject.Name}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">API Key: </span>
+                        <span className="text-orange-400 font-mono text-xs">
+                          {selectedProject.APIKey
+                            ? selectedProject.APIKey.slice(0, 20) + "..."
+                            : "Not available"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Project Select */}
+                {/* Purpose Select - Required for WhatsApp, Optional for SMS */}
+                {availablePurposes.length > 0 && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Select Project *
+                      Select Template{" "}
+                      {selectedMedium === "whatsapp" ? "*" : "(Optional)"}
                     </label>
                     <select
-                      required
-                      value={formData.projectId}
+                      required={selectedMedium === "whatsapp"}
+                      value={formData.purposeId}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          projectId: e.target.value,
-                          purposeId: "",
+                          purposeId: e.target.value,
                         })
                       }
                       className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
                     >
                       <option value="" className="bg-gray-800">
-                        Select a project
+                        {selectedMedium === "whatsapp"
+                          ? "Select a purpose"
+                          : "Use project default"}
                       </option>
-                      {clientData.Projects.map((project) => (
+                      {availablePurposes.map((purpose) => (
                         <option
-                          key={project.ID}
-                          value={project.ID}
+                          key={purpose.ID}
+                          value={purpose.ID}
                           className="bg-gray-800"
                         >
-                          {project.Name}
+                          {purpose.Name}
                         </option>
                       ))}
                     </select>
                   </div>
+                )}
 
-                  {/* Project Details */}
-                  {selectedProject && (
-                    <div className="bg-black/20 rounded-xl p-4 border border-orange-500/20">
-                      <h3 className="text-sm font-semibold text-orange-300 mb-2">
-                        Selected Project Details
-                      </h3>
-                      <div className="space-y-1 text-sm">
-                        <div>
-                          <span className="text-gray-400">Project: </span>
-                          <span className="text-white">
-                            {selectedProject.Name}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">API Key: </span>
-                          <span className="text-orange-400 font-mono text-xs">
-                            {selectedProject.APIKey
-                              ? selectedProject.APIKey.slice(0, 20) + "..."
-                              : "Not available"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                {/* Mobile Number */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    Mobile Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={formData.mobile}
+                    onChange={(e) =>
+                      setFormData({ ...formData, mobile: e.target.value })
+                    }
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
+                    placeholder={
+                      selectedMedium === "whatsapp"
+                        ? "918208709752"
+                        : "8208709752"
+                    }
+                  />
+                </div>
 
-                  {/* Purpose Select - Required for WhatsApp, Optional for SMS */}
-                  {availablePurposes.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Select Template{" "}
-                        {selectedMedium === "whatsapp" ? "*" : "(Optional)"}
-                      </label>
-                      <select
-                        required={selectedMedium === "whatsapp"}
-                        value={formData.purposeId}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            purposeId: e.target.value,
-                          })
-                        }
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
-                      >
-                        <option value="" className="bg-gray-800">
-                          {selectedMedium === "whatsapp"
-                            ? "Select a purpose"
-                            : "Use project default"}
-                        </option>
-                        {availablePurposes.map((purpose) => (
-                          <option
-                            key={purpose.ID}
-                            value={purpose.ID}
-                            className="bg-gray-800"
-                          >
-                            {purpose.Name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {/* Mobile Number */}
+                {/* SMS Message */}
+                {selectedMedium === "sms" && (
                   <div>
                     <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Mobile Number *
+                      Message *
                     </label>
-                    <input
-                      type="tel"
+                    <textarea
                       required
-                      value={formData.mobile}
+                      value={formData.message}
                       onChange={(e) =>
-                        setFormData({ ...formData, mobile: e.target.value })
+                        setFormData({ ...formData, message: e.target.value })
                       }
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200"
-                      placeholder={
-                        selectedMedium === "whatsapp"
-                          ? "918208709752"
-                          : "8208709752"
-                      }
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200 h-32 resize-none"
+                      placeholder="Type your message here..."
+                      maxLength={160}
                     />
+                    <div className="text-right text-xs text-gray-400 mt-1">
+                      {formData.message.length}/160 characters
+                    </div>
                   </div>
+                )}
 
-                  {/* SMS Message */}
-                  {selectedMedium === "sms" && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Message *
-                      </label>
-                      <textarea
-                        required
-                        value={formData.message}
-                        onChange={(e) =>
-                          setFormData({ ...formData, message: e.target.value })
-                        }
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all duration-200 h-32 resize-none"
-                        placeholder="Type your message here..."
-                        maxLength={160}
-                      />
-                      <div className="text-right text-xs text-gray-400 mt-1">
-                        {formData.message.length}/160 characters
+                {/* WhatsApp Variables */}
+                {selectedMedium === "whatsapp" &&
+                  purposeVariables.length > 0 && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6">
+                      <div className="flex items-center space-x-2 mb-4">
+                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
+                        <h3 className="text-lg font-semibold text-green-300">
+                          Template Variables
+                        </h3>
+                      </div>
+
+                      <div className="space-y-4">
+                        {purposeVariables
+                          .sort((a, b) => a.position - b.position)
+                          .map((variable) => (
+                            <div key={variable.name}>
+                              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                {variable.name} (Position {variable.position}) *
+                              </label>
+                              <input
+                                type={
+                                  variable.type === "number" ? "number" : "text"
+                                }
+                                required
+                                value={variableValues[variable.name] || ""}
+                                onChange={(e) =>
+                                  setVariableValues({
+                                    ...variableValues,
+                                    [variable.name]: e.target.value,
+                                  })
+                                }
+                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
+                                placeholder={`Enter ${variable.name}`}
+                              />
+                            </div>
+                          ))}
                       </div>
                     </div>
                   )}
-
-                  {/* WhatsApp Variables */}
-                  {selectedMedium === "whatsapp" &&
-                    purposeVariables.length > 0 && (
-                      <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-400" />
-                          <h3 className="text-lg font-semibold text-green-300">
-                            Template Variables
-                          </h3>
-                        </div>
-
-                        <div className="space-y-4">
-                          {purposeVariables
-                            .sort((a, b) => a.position - b.position)
-                            .map((variable) => (
-                              <div key={variable.name}>
-                                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                  {variable.name} (Position {variable.position})
-                                  *
-                                </label>
-                                <input
-                                  type={
-                                    variable.type === "number"
-                                      ? "number"
-                                      : "text"
-                                  }
-                                  required
-                                  value={variableValues[variable.name] || ""}
-                                  onChange={(e) =>
-                                    setVariableValues({
-                                      ...variableValues,
-                                      [variable.name]: e.target.value,
-                                    })
-                                  }
-                                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200"
-                                  placeholder={`Enter ${variable.name}`}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-                </form>
-              </motion.div>
-            )}
+              </form>
+            </motion.div>
+            )
           </AnimatePresence>
         ) : (
           <motion.div
@@ -606,15 +525,14 @@ const SendSMS: React.FC = () => {
             </div>
 
             <h2
-                className={`text-2xl font-bold mb-4 ${
-                  responseIsSuccess ? "text-green-400" : "text-red-400"
-                }`}
-              >
-                {responseIsSuccess
-                  ? `${selectedMedium?.toUpperCase()} Sent Successfully!`
-                  : `${selectedMedium?.toUpperCase()} Failed to Send`}
-              </h2>
-
+              className={`text-2xl font-bold mb-4 ${
+                responseIsSuccess ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {responseIsSuccess
+                ? `${selectedMedium?.toUpperCase()} Sent Successfully!`
+                : `${selectedMedium?.toUpperCase()} Failed to Send`}
+            </h2>
 
             <div className="bg-black/20 rounded-xl p-6 mb-6 text-left">
               <h3 className="text-lg font-semibold text-gray-300 mb-3">
@@ -634,13 +552,11 @@ const SendSMS: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center space-x-2">
-                <span className="text-gray-400 font-semibold">Message:</span>
-                <span className="text-red-500 font-bold text-l">
-                  {responseMessage || "No response message"}
-                </span>
-              </div>
-
-
+                  <span className="text-gray-400 font-semibold">Message:</span>
+                  <span className="text-red-500 font-bold text-l">
+                    {responseMessage || "No response message"}
+                  </span>
+                </div>
 
                 {response.data && (
                   <div>
@@ -676,50 +592,33 @@ const SendSMS: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Navigation Buttons */}
-        {!response && (
-          <div className="flex justify-between mt-8">
-            <button
-              onClick={prevStep}
-              disabled={step === 1}
-              className="px-6 py-3 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        {/* Submit Button */}
+        {!response && selectedMedium && (
+          <div className="mt-8">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              Previous
-            </button>
-
-            {step < 2 ? (
-              <button
-                onClick={nextStep}
-                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl hover:from-orange-600 hover:to-red-600 transition-colors"
-              >
-                Next
-              </button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleSubmit}
-                disabled={loading}
-                className="px-8 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <motion.div
-                    className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                  />
-                ) : (
-                  <>
-                    <PaperAirplaneIcon className="w-5 h-5" />
-                    <span>Send {selectedMedium?.toUpperCase()}</span>
-                  </>
-                )}
-              </motion.button>
-            )}
+              {loading ? (
+                <motion.div
+                  className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                />
+              ) : (
+                <>
+                  <PaperAirplaneIcon className="w-5 h-5" />
+                  <span>Send {selectedMedium?.toUpperCase()}</span>
+                </>
+              )}
+            </motion.button>
           </div>
         )}
       </motion.div>
