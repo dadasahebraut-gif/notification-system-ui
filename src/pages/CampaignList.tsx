@@ -16,6 +16,7 @@ interface Campaign {
   success: number;
   failed: number;
   CreatedAt: string;
+  ScheduledAt?: string; // ✅ Add this optional field
 }
 
 export default function CampaignList() {
@@ -53,7 +54,11 @@ export default function CampaignList() {
         const data = await response.json();
 
         if (data?.data) {
-          setCampaigns(data.data);
+          const mappedCampaigns = data.data.map((c: any) => ({
+            ...c,
+            ScheduledAt: c.ScheduleAt || null, // ✅ match backend field
+          }));
+          setCampaigns(mappedCampaigns);
         } else {
           console.warn("Unexpected API response:", data);
         }
@@ -107,6 +112,48 @@ export default function CampaignList() {
     } catch (err) {
       console.error("Error scheduling campaign:", err);
       setLoadingMessage("Error while scheduling campaign.");
+      setTimeout(() => setActionLoading(false), 1500);
+    }
+  };
+
+  const handleCancelSchedule = async (campaignId: string, scheduleAt: Date) => {
+    try {
+      setActionLoading(true);
+      setLoadingMessage("Cancelling scheduled campaign...");
+
+      const storedKeys = localStorage.getItem("api_keys");
+      let apiKey = "";
+      if (storedKeys) {
+        const parsedKeys = JSON.parse(storedKeys);
+        const firstKey = Object.values(parsedKeys)[0];
+        apiKey = firstKey as string;
+      }
+
+      if (!apiKey) throw new Error("API key not found");
+
+      const res = await fetch(
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CAMPAIGN}/sms/schedule/cancel`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-API-KEY": apiKey,
+            "X-PURPOSE-ID": localStorage.getItem("client_id") || "",
+          },
+          body: JSON.stringify({
+            campaign_id: campaignId,
+            schedule_at: scheduleAt.toISOString(),
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to cancel scheduled campaign");
+
+      setLoadingMessage("Campaign schedule cancelled!");
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err) {
+      console.error(err);
+      setLoadingMessage("Failed to cancel schedule.");
       setTimeout(() => setActionLoading(false), 1500);
     }
   };
@@ -266,12 +313,29 @@ export default function CampaignList() {
                       )}
 
                       {c.Status === "scheduled" && (
-                        <button
-                          className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md text-xs hover:opacity-90 transition"
-                          onClick={() => handleExecute(c.ID)}
-                        >
-                          Execute
-                        </button>
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md text-xs hover:opacity-90 transition"
+                            onClick={() => handleExecute(c.ID)}
+                          >
+                            Execute
+                          </button>
+                          <button
+                            className="px-3 py-1 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-md text-xs hover:opacity-90 transition"
+                            onClick={() => {
+                              if (!c.ScheduledAt) {
+                                alert("Scheduled date not found!");
+                                return;
+                              }
+                              handleCancelSchedule(
+                                c.ID,
+                                new Date(c.ScheduledAt)
+                              );
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       )}
 
                       {c.Status === "executed" && (
