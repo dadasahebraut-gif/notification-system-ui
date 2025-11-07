@@ -7,7 +7,6 @@ import { clearClientData } from "../store/slices/clientSlice";
 import {
   HomeIcon,
   ChartBarIcon,
-  PlusIcon,
   PaperAirplaneIcon,
   ArrowRightOnRectangleIcon,
   ChevronLeftIcon,
@@ -17,6 +16,10 @@ import {
   Bars3Icon,
   XMarkIcon,
   TagIcon,
+  RocketLaunchIcon,
+  FolderIcon,
+  SparklesIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 
 const Sidebar: React.FC = () => {
@@ -42,19 +45,19 @@ const Sidebar: React.FC = () => {
     {
       path: "/create-campaign",
       name: "Campaign",
-      icon: PlusIcon,
+      icon: RocketLaunchIcon,
       subItems: [
         { path: "/create-campaign", name: "Create Campaign" },
         { path: "/campaign-list", name: "All Campaigns" },
       ],
     },
-    { path: "/create-project", name: "New Project", icon: PlusIcon },
-    { path: "/create-membership", name: "Add Plans", icon: HomeIcon },
+    { path: "/create-project", name: "New Project", icon: FolderIcon },
+    { path: "/create-membership", name: "Add Plans", icon: SparklesIcon },
     { path: "/send-sms", name: "Send SMS", icon: PaperAirplaneIcon },
     {
       path: "/create-sender",
       name: "Sender",
-      icon: PlusIcon,
+      icon: UserIcon,
       subItems: [
         { path: "/create-sender", name: "Create Sender" },
         { path: "/all-senders", name: "All Senders" },

@@ -395,7 +395,7 @@ const Dashboard: React.FC = () => {
               </motion.div> */}
 
             {/* Quick Actions */}
-            <QuickActions />
+            {/* <QuickActions /> */}
 
             {/* Memberships */}
             <motion.div

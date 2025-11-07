@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, API_CONFIG } from "../config/api";
+import {
+  UserIcon,
+  PlusIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
 
 const AllSenders: React.FC = () => {
+  const navigate = useNavigate();
   const [senders, setSenders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,8 +53,24 @@ const AllSenders: React.FC = () => {
     fetchSenders();
   }, [clientId]);
 
-  if (loading) return <p className="text-gray-400">Loading...</p>;
-  if (error) return <p className="text-red-400">{error}</p>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center lg:ml-[280px]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading senders...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center lg:ml-[280px]">
+        <p className="text-red-400">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 lg:ml-[280px]">
@@ -54,12 +78,31 @@ const AllSenders: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="mb-8"
         >
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent mb-2">
-            All Senders
-          </h2>
-          <p className="text-gray-400">Manage your SMS sender IDs</p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-2xl">
+                <UserIcon className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                  All Senders
+                </h1>
+                <p className="text-gray-400 mt-1">Manage your SMS sender IDs</p>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/create-sender")}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Create Sender</span>
+            </motion.button>
+          </div>
         </motion.div>
 
         {senders.length === 0 ? (
@@ -68,7 +111,22 @@ const AllSenders: React.FC = () => {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-16 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10"
           >
-            <p className="text-gray-400">No senders found.</p>
+            <UserIcon className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No Senders Found
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Create your first sender to get started
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/create-sender")}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 text-white rounded-xl hover:from-cyan-600 hover:to-purple-600 transition-all duration-200 inline-flex items-center space-x-2"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Create Sender</span>
+            </motion.button>
           </motion.div>
         ) : (
           <div className="overflow-x-auto bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
@@ -110,15 +168,23 @@ const AllSenders: React.FC = () => {
                       {sender.DLTEntityPrincipallID || "—"}
                     </td>
                     <td className="px-6 py-4">
-                      {sender.IsActive ? (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-300 border border-green-500/30">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
-                          Inactive
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {sender.IsActive ? (
+                          <>
+                            <CheckCircleIcon className="w-4 h-4 text-green-400" />
+                            <span className="text-green-400 text-xs font-semibold">
+                              Active
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircleIcon className="w-4 h-4 text-red-400" />
+                            <span className="text-red-400 text-xs font-semibold">
+                              Inactive
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </motion.tr>
                 ))}

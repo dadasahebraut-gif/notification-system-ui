@@ -6,6 +6,7 @@ import { executeCampaign } from "../api/ExecuteCampaign";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { scheduleCampaign } from "../api/scheduleCampaign";
+import { RocketLaunchIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 interface Campaign {
   ID: string;
@@ -183,93 +184,139 @@ export default function CampaignList() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="backdrop-blur-xl border border-white/10 bg-white/5 rounded-2xl shadow-2xl p-8"
+          className="mb-8"
         >
-          <h2 className="text-3xl font-semibold text-white mb-8 text-center">
-            Campaign List
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl">
+                <RocketLaunchIcon className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  All Campaigns
+                </h1>
+                <p className="text-gray-400 mt-1">Manage your SMS campaigns</p>
+              </div>
+            </div>
 
-          {loading ? (
-            <p className="text-gray-400 text-center">Loading campaigns...</p>
-          ) : campaigns.length === 0 ? (
-            <p className="text-gray-400 text-center">No campaigns found.</p>
-          ) : (
-            <div className="overflow-x-auto rounded-xl">
-              <table className="w-full text-sm text-white">
-                <thead>
-                  <tr className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-b border-white/10">
-                    <th className="px-6 py-4 text-left text-gray-300 font-semibold">
-                      Campaign Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-gray-300 font-semibold">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-center text-gray-300 font-semibold">
-                      Total
-                    </th>
-                    <th className="px-6 py-4 text-center text-gray-300 font-semibold">
-                      Created
-                    </th>
-                    <th className="px-6 py-4 text-center text-gray-300 font-semibold">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/create-campaign")}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Create Campaign</span>
+            </motion.button>
+          </div>
+        </motion.div>
 
-                <tbody>
-                  {campaigns.map((c, idx) => (
-                    <motion.tr
-                      key={c.ID}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className="hover:bg-white/5 transition-all duration-200 border-b border-white/5"
-                    >
-                      <td className="px-6 py-4 font-medium">{c.Name}</td>
-                      <td className="px-6 py-4 capitalize">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                            c.Status === "executed"
-                              ? "bg-green-500/20 text-green-400 border-green-500/30"
-                              : c.Status === "scheduled"
-                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                              : c.Status === "draft"
-                              ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                              : "bg-gray-500/20 text-gray-400 border-gray-500/30"
-                          }`}
-                        >
-                          {c.Status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {c.TotalCount || 0}
-                      </td>
-                      <td className="px-6 py-4 text-center text-gray-300">
-                        {c.CreatedAt
-                          ? new Date(c.CreatedAt).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-4 text-center space-x-2">
-                        {c.Status === "draft" && (
-                          <>
-                            <button
-                              className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md text-xs hover:opacity-90 transition"
-                              onClick={() => handleExecute(c.ID)}
-                            >
-                              Execute
-                            </button>
-                            <button
-                              className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-md text-xs hover:opacity-90 transition"
-                              onClick={() => {
-                                setSelectedCampaignId(c.ID);
-                                setShowScheduleModal(true);
-                              }}
-                            >
-                              Schedule
-                            </button>
-                          </>
-                        )}
+        {loading ? (
+          <div className="text-center py-16 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10">
+            <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-400">Loading campaigns...</p>
+          </div>
+        ) : campaigns.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10"
+          >
+            <RocketLaunchIcon className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-white mb-2">
+              No Campaigns Found
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Create your first campaign to get started
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate("/create-campaign")}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 inline-flex items-center space-x-2"
+            >
+              <PlusIcon className="w-5 h-5" />
+              <span>Create Campaign</span>
+            </motion.button>
+          </motion.div>
+        ) : (
+          <div className="overflow-x-auto overflow-hidden bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-b border-white/10">
+                  <th className="px-6 py-4 text-left text-gray-300 font-semibold">
+                    Campaign Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-gray-300 font-semibold">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-center text-gray-300 font-semibold">
+                    Total
+                  </th>
+                  <th className="px-6 py-4 text-center text-gray-300 font-semibold">
+                    Created
+                  </th>
+                  <th className="px-6 py-4 text-center text-gray-300 font-semibold">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {campaigns.map((c, idx) => (
+                  <motion.tr
+                    key={c.ID}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="hover:bg-white/5 transition-all duration-200 border-b border-white/5"
+                  >
+                    <td className="px-6 py-4 text-white font-medium">
+                      {c.Name}
+                    </td>
+                    <td className="px-6 py-4 capitalize">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                          c.Status === "executed"
+                            ? "bg-green-500/20 text-green-400 border-green-500/30"
+                            : c.Status === "scheduled"
+                            ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                            : c.Status === "draft"
+                            ? "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                            : "bg-gray-500/20 text-gray-400 border-gray-500/30"
+                        }`}
+                      >
+                        {c.Status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {c.TotalCount || 0}
+                    </td>
+                    <td className="px-6 py-4 text-center text-gray-300">
+                      {c.CreatedAt
+                        ? new Date(c.CreatedAt).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className="px-6 py-4 text-center space-x-2">
+                      {c.Status === "draft" && (
+                        <>
+                          <button
+                            className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md text-xs hover:opacity-90 transition"
+                            onClick={() => handleExecute(c.ID)}
+                          >
+                            Execute
+                          </button>
+                          <button
+                            className="px-3 py-1 bg-gradient-to-r from-yellow-500 to-orange-600 text-white rounded-md text-xs hover:opacity-90 transition"
+                            onClick={() => {
+                              setSelectedCampaignId(c.ID);
+                              setShowScheduleModal(true);
+                            }}
+                          >
+                            Schedule
+                          </button>
+                        </>
+                      )}
 
                         {c.Status === "scheduled" && (
                         <div className="flex gap-2 justify-center">
@@ -295,24 +342,23 @@ export default function CampaignList() {
                         </div>
                       )}
 
-                        {c.Status === "executed" && (
-                          <button
-                            onClick={() =>
-                              navigate(`/campaign/${c.ID}/report`, { state: c })
-                            }
-                            className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-md text-xs hover:opacity-90 transition"
-                          >
-                            Report
-                          </button>
-                        )}
-                      </td>
-                    </motion.tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </motion.div>
+                      {c.Status === "executed" && (
+                        <button
+                          onClick={() =>
+                            navigate(`/campaign/${c.ID}/report`, { state: c })
+                          }
+                          className="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-md text-xs hover:opacity-90 transition"
+                        >
+                          Report
+                        </button>
+                      )}
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {showScheduleModal && (
           <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/40 z-50">
