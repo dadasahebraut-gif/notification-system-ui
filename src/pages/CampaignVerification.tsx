@@ -139,6 +139,7 @@ const CampaignVerification: React.FC = () => {
         <div className="w-[480px] p-6 rounded-2xl bg-white/10 border border-white/20 shadow-2xl text-white backdrop-blur-xl">
 
           <h3 className="text-xl font-semibold mb-4 text-center">Schedule Campaign</h3>
+          <p className="text-xs font-semibold mb-4 text-center text-red-500">Note- your campaign will execute one minute after selected scheduled time.</p>
 
           <div className="flex gap-4 justify-center">
             <DatePicker
@@ -195,13 +196,18 @@ const CampaignVerification: React.FC = () => {
 
       {/* 🔹 Full-screen Loader Overlay */}
       {loading && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center bg-white/10 backdrop-blur-sm z-50 p-6 rounded-2xl shadow-2xl border border-white/20">
+  // 1. Full-screen invisible container for centering and covering the viewport
+      <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+        <div className="flex flex-col items-center justify-center p-8 rounded-2xl shadow-2xl border border-white/20 bg-white/10 z-10">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-cyan-400 border-solid mb-4"></div>
-          <p className="text-lg text-cyan-300 font-semibold">
-            {loadingMessage}
-          </p>
+          
+          <p className="text-lg text-cyan-300 font-semibold text-center">
+              {loadingMessage}
+         </p>
         </div>
-      )}
+      </div>
+)}
     </motion.div>
   );
 };
