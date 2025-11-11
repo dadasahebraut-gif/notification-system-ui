@@ -137,14 +137,14 @@ const CampaignReport: React.FC = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center h-[70vh] text-gray-300 text-lg">
+      <div className="flex justify-center items-center h-[70vh] text-gray-300 text-lg lg:ml-[280px]">
         Loading report...
       </div>
     );
 
   if (!report)
     return (
-      <div className="flex flex-col justify-center items-center h-[70vh] text-gray-400">
+      <div className="flex flex-col justify-center items-center h-[70vh] text-gray-400 lg:ml-[280px]">
         <XCircleIcon className="w-10 h-10 mb-3 text-red-500" />
         <p>Unable to load campaign report.</p>
       </div>
@@ -153,7 +153,7 @@ const CampaignReport: React.FC = () => {
   const data = report.data;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-6 py-10 border-white/10 bg-white/5 text-white">
+    <div className="min-h-screen flex flex-col items-center justify-start px-6 py-10 lg:ml-[280px] text-white">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

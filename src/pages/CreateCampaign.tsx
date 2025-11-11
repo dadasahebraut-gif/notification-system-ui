@@ -198,17 +198,25 @@ const CreateCampaign: React.FC = () => {
               <select
                 value={projectId}
                 onChange={handleProjectChange}
-                className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-xl text-gray-300 
-              focus:ring-2 focus:ring-indigo-400 transition-all duration-300">   
-                <option value="" >Select Project</option>
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400/50 transition-all duration-300"
+              >
+                <option value="" className="bg-gray-900">
+                  Select Project
+                </option>
                 {projects.length > 0 ? (
                   projects.map((project) => (
-                    <option key={project.id} value={project.id}>
+                    <option
+                      key={project.id}
+                      value={project.id}
+                      className="bg-gray-900 text-white"
+                    >
                       {project.name}
                     </option>
                   ))
                 ) : (
-                  <option disabled>No projects found</option>
+                  <option disabled className="bg-gray-900">
+                    No projects found
+                  </option>
                 )}
               </select>
             </div>
@@ -216,20 +224,28 @@ const CreateCampaign: React.FC = () => {
             {/* Purpose Dropdown */}
             <div>
               <label className="block text-gray-300 mb-2">Select Template</label>
-              <select 
+              <select
                 value={purposeId}
                 onChange={(e) => setPurposeId(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/10 rounded-xl text-gray-300 focus:ring-2 focus:ring-cyan-500/50"
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 transition-all duration-300"
               >
-                <option value="">Select Template</option>
+                <option value="" className="bg-gray-900">
+                  Select Template
+                </option>
                 {purposes.length > 0 ? (
                   purposes.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option
+                      key={p.id}
+                      value={p.id}
+                      className="bg-gray-900 text-white"
+                    >
                       {p.name}
                     </option>
                   ))
                 ) : (
-                  <option disabled>No template found</option>
+                  <option disabled className="bg-gray-900">
+                    No template found
+                  </option>
                 )}
               </select>
             </div>

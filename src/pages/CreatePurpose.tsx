@@ -29,10 +29,10 @@ const CreatePurpose: React.FC = () => {
 
   const [client, setClient] = useState<any>(null);
   const [senders, setSenders] = useState<any[]>([]);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>("");
   const [loading, setLoading] = useState(false);
   const [apiResponse, setApiResponse] = useState<any>(null);
-
+  
   const [selectedMedium, setSelectedMedium] = useState<"sms" | "whatsapp" | "">(
     ""
   );
@@ -156,6 +156,19 @@ const CreatePurpose: React.FC = () => {
       setError("Description is required");
       return false;
     }
+
+     // 🔹 Validate Template Type (radio button)
+  if (!formData.purposeType) {
+    setError("Please select a Template Type (Promotional or Transactional).");
+    return false;
+  }
+
+  // 🔹 Validate Sender Selection (checkbox list)
+  if (!formData.senderIds || formData.senderIds.length === 0) {
+    setError("Please select at least one sender.");
+    return false;
+  }
+
     if (!formData.templateId.trim()) {
       setError("Template ID is required");
       return false;
@@ -239,18 +252,25 @@ const CreatePurpose: React.FC = () => {
       });
 
       const data = await response.json();
-      setApiResponse(data);
-
+      
       if (data.status === "success") {
+        setApiResponse(data);
         const purpose: Purpose = {
           ...data.data,
           MetaData: JSON.stringify(metadata),
         };
         dispatch(addPurpose({ projectId: formData.projectId, purpose }));
-        setTimeout(() => navigate("/dashboard"), 3000);
-      } else {
-        setError(data.message || "Failed to create template");
+        setError(null); 
+        setTimeout(() => navigate("/all-templates"), 3000);
+      } else if (data.status === "error") {
+  
+        if (data.message === "duplicate name" && data.error) {
+          setError(data.error); // shows "template name 'xyz' already exists"
+        } else {
+          setError(data.message || "Failed to create template.");
+        }
       }
+
     } catch (error) {
       console.error("Error creating template:", error);
       setError("Failed to create template. Please try again.");
@@ -406,7 +426,7 @@ const CreatePurpose: React.FC = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Description *
+                    Template Content *
                   </label>
                   <textarea
                     required
@@ -418,106 +438,124 @@ const CreatePurpose: React.FC = () => {
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 
                      h-32 resize-none"
-                    placeholder="Describe what this template is used for and when notifications should be sent..."
-                  />
-                </div>
+          placeholder="Describe what this template is used for and when notifications should be sent..."
+        />
+      </div>
 
-                {/* 🔹 New Field: Purpose Type (Radio Buttons) */}
-                {selectedMedium && (
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Template Type *
-                    </label>
-                    <div className="flex space-x-6 text-white">
-                      {["Promotional", "Transactional"].map((type) => (
-                        <label
-                          key={type}
-                          className="flex items-center space-x-2 cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name="purposeType"
-                            value={type.toLowerCase()}
-                            checked={
-                              formData.purposeType === type.toLowerCase()
-                            }
-                            onChange={(e) => {
-                              const selectedType = e.target.value;
-                              setFormData({
-                                ...formData,
-                                purposeType: selectedType,
-                                senderIds: [], // reset senders on switch
-                              });
-                            }}
-                            className="text-purple-500 focus:ring-purple-500/50 cursor-pointer"
-                          />
-                          <span>{type}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
+   
 
-                {/* 🔹 New Field: Inline Multi-select Senders (Checkbox List) */}
-                {selectedMedium && formData.purposeType && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
-                      Select Senders (
-                      {formData.purposeType === "promotional"
-                        ? "Promotional"
-                        : "Transactional"}
-                      ) *
-                    </label>
 
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap gap-3">
-                      {senders
-                        .filter(
-                          (sender: any) =>
-                            sender.Type?.toLowerCase() ===
-                            formData.purposeType.toLowerCase()
-                        )
-                        .map((sender: any) => (
+              {/* 🔹 New Field: Purpose Type (Radio Buttons) */}
+                  {selectedMedium && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        Template Type *
+                      </label>
+                      <div className="flex space-x-6 text-white">
+                        {["Promotional", "Transactional"].map((type) => (
                           <label
-                            key={sender.ID}
-                            className={`flex items-center space-x-2 text-sm cursor-pointer rounded-full px-3 py-2 border 
-              ${
-                formData.senderIds?.includes(sender.SenderId)
-                  ? "bg-purple-600/60 border-purple-400 text-white"
-                  : "bg-white/10 border-white/10 text-gray-300 hover:bg-purple-600/30"
-              }`}
+                            key={type}
+                            className="flex items-center space-x-2 cursor-pointer"
                           >
                             <input
-                              type="checkbox"
-                              checked={formData.senderIds?.includes(
-                                sender.SenderId
-                              )}
+                              type="radio"
+                              name="purposeType"
+                              value={type.toLowerCase()}
+                              checked={formData.purposeType === type.toLowerCase()}
                               onChange={(e) => {
-                                const isChecked = e.target.checked;
+                                const selectedType = e.target.value;
                                 setFormData({
                                   ...formData,
-                                  senderIds: isChecked
-                                    ? [
-                                        ...(formData.senderIds || []),
-                                        sender.SenderId,
-                                      ]
-                                    : formData.senderIds.filter(
-                                        (id) => id !== sender.SenderId
-                                      ),
+                                  purposeType: selectedType,
+                                  senderIds: [], // reset senders on switch
                                 });
                               }}
-                              className="text-purple-500 focus:ring-purple-500 cursor-pointer"
+                              required // ✅ Required radio selection
+                              className="text-purple-500 focus:ring-purple-500/50 cursor-pointer"
                             />
-                            <span>{sender.SenderId}</span>
+                            <span>{type}</span>
                           </label>
                         ))}
+                      </div>
+                      {/* 🔸 Validation message */}
+                      {!formData.purposeType && (
+                        <p className="text-red-400 text-sm mt-1">Please select a template type.</p>
+                      )}
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* 🔹 New Field: Inline Multi-select Senders (Checkbox List) */}
+                  {selectedMedium && formData.purposeType && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-semibold text-gray-300 mb-2">
+                        Select Senders (
+                        {formData.purposeType === "promotional" ? "Promotional" : "Transactional"}
+                        ) *
+                      </label>
+
+                      {/* 🔍 Filter senders based on type */}
+                      {(() => {
+                        const filteredSenders = senders.filter(
+                          (sender: any) =>
+                            sender.Type?.toLowerCase() === formData.purposeType.toLowerCase()
+                        );
+
+                        return filteredSenders.length > 0 ? (
+                          <>
+                            <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-wrap gap-3">
+                              {filteredSenders.map((sender: any) => (
+                                <label
+                                  key={sender.ID}
+                                  className={`flex items-center space-x-2 text-sm cursor-pointer rounded-full px-3 py-2 border 
+                                    ${
+                                      formData.senderIds?.includes(sender.SenderId)
+                                        ? "bg-purple-600/60 border-purple-400 text-white"
+                                        : "bg-white/10 border-white/10 text-gray-300 hover:bg-purple-600/30"
+                                    }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={formData.senderIds?.includes(sender.SenderId)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setFormData({
+                                        ...formData,
+                                        senderIds: isChecked
+                                          ? [...(formData.senderIds || []), sender.SenderId]
+                                          : formData.senderIds.filter(
+                                              (id) => id !== sender.SenderId
+                                            ),
+                                      });
+                                    }}
+                                    className="text-purple-500 focus:ring-purple-500 cursor-pointer"
+                                  />
+                                  <span>{sender.SenderId}</span>
+                                </label>
+                              ))}
+                            </div>
+
+                            {/* 🔸 Validation message */}
+                            {formData.senderIds.length === 0 && (
+                              <p className="text-red-400 text-sm mt-1">
+                                Please select at least one sender.
+                              </p>
+                            )}
+                          </>
+                        ) : (
+                          <p className="text-red-400 text-sm mt-1">
+                            No senders available for this template type.
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+
 
                 {/* Template ID */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
-                    Template ID *
+                    Template ID (Provided by DLT) *
                   </label>
                   <input
                     type="text"
@@ -781,7 +819,7 @@ const CreatePurpose: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-gray-300 mb-4">Redirecting to dashboard...</p>
+            <p className="text-gray-300 mb-4">Redirecting to template details...</p>
             <div className="w-full bg-gray-700 rounded-full h-2">
               <motion.div
                 initial={{ width: 0 }}
@@ -794,34 +832,44 @@ const CreatePurpose: React.FC = () => {
         )}
 
         {/* Submit Button */}
-        {!apiResponse && (
-          <div className="mt-8">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <motion.div
-                  className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                />
-              ) : (
-                <>
-                  <TagIcon className="w-5 h-5" />
-                  <span>Create Template</span>
-                </>
+          {!apiResponse && (
+            <div className="mt-8">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl 
+                          hover:from-purple-600 hover:to-pink-600 transition-all duration-200 
+                          flex items-center justify-center space-x-2 disabled:opacity-50"
+              >
+                {loading ? (
+                  <motion.div
+                    className="w-6 h-6 border-2 border-white border-t-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                  />
+                ) : (
+                  <>
+                    <TagIcon className="w-5 h-5" />
+                    <span>Create Template</span>
+                  </>
+                )}
+              </motion.button>
+
+              {/* 🔸 Error message shown under button */}
+              {error && (
+                <p className="text-red-400 text-sm text-center mt-3">
+                  {error}
+                </p>
               )}
-            </motion.button>
-          </div>
-        )}
+            </div>
+          )}
+
       </motion.div>
     </div>
   );

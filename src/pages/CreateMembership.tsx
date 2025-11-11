@@ -4,7 +4,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../hooks/redux";
 import { addMembership, Plan } from "../store/slices/clientSlice";
 import { getApiUrl } from "../config/api";
-import CelebrationAnimation from "../components/CelebrationAnimation";
 import {
   SparklesIcon,
   RocketLaunchIcon,
@@ -185,108 +184,31 @@ const CreateMembership: React.FC = () => {
   );
 
   if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4 relative">
-        <CelebrationAnimation />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full text-center"
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white/5 backdrop-blur-lg rounded-3xl p-10 border border-white/10 shadow-2xl text-center max-w-md w-full"
+      >
+        <h1 className="text-3xl font-semibold text-white mb-4">
+          ✅ Membership Plans Added
+        </h1>
+ 
+        <p className="text-gray-300 mb-6">
+          Your membership plans is requested to admin
+        </p>
+ 
+        <button
+          onClick={() => setSuccess(false)}
+          className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium hover:opacity-90 transition-all"
         >
-          {/* Celebration Animation */}
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-8"
-          >
-            <motion.div
-              animate={{
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full mb-6 relative overflow-hidden"
-            >
-              <SparklesIcon className="w-16 h-16 text-white" />
-
-              {/* Sparkles */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-yellow-300 rounded-full"
-                  initial={{
-                    x: 0,
-                    y: 0,
-                    scale: 0,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    x: Math.cos((i * 45 * Math.PI) / 180) * 60,
-                    y: Math.sin((i * 45 * Math.PI) / 180) * 60,
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                    ease: "easeOut",
-                  }}
-                />
-              ))}
-            </motion.div>
-          </motion.div>
-
-          <motion.h1
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
-          >
-            🎉 Membership Plans Added! 🎉
-          </motion.h1>
-
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-xl text-gray-300 mb-8"
-          >
-            Your new membership plans have been activated successfully!
-          </motion.p>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 shadow-2xl mb-8"
-          >
-            <h3 className="text-lg font-semibold text-white mb-4">
-              🚀 Updating your dashboard...
-            </h3>
-
-            <div className="w-full bg-gray-700 rounded-full h-3 mb-4">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 3, ease: "easeInOut" }}
-                className="bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 h-3 rounded-full"
-              />
-            </div>
-
-            <p className="text-gray-400 text-sm">
-              Activating your plans and setting up your workspace...
-            </p>
-          </motion.div>
-        </motion.div>
-      </div>
-    );
-  }
+          Go Back
+        </button>
+      </motion.div>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
