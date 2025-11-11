@@ -308,22 +308,31 @@ const Dashboard: React.FC = () => {
 
             {/* Analytics Section */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-16">
-              {/* Usage Chart */}
-              <div className="xl:col-span-2">
-                <UsageChart
-                  data={{
-                    sms: { used: usedSMSQuota, total: totalSMSQuota },
-                    whatsapp: {
-                      used: usedWhatsAppQuota,
-                      total: totalWhatsAppQuota,
-                    },
-                  }}
-                />
-              </div>
-              <div className="xl:col-span-1">
-                <ClientInfoCard client={clientData} userEmail={user?.email} />
-              </div>
-            </div>
+  {/* If usage is zero → Show ClientInfoCard full width */}
+  {(totalSMSQuota + totalWhatsAppQuota) === 0 ? (
+    <div className="xl:col-span-3">
+      <ClientInfoCard client={clientData} userEmail={user?.email} />
+    </div>
+  ) : (
+    <>
+      <div className="xl:col-span-2">
+        <UsageChart
+          data={{
+            sms: { used: usedSMSQuota, total: totalSMSQuota },
+            whatsapp: {
+              used: usedWhatsAppQuota,
+              total: totalWhatsAppQuota,
+            },
+          }}
+        />
+      </div>
+      <div className="xl:col-span-1">
+        <ClientInfoCard client={clientData} userEmail={user?.email} />
+      </div>
+    </>
+  )}
+</div>
+
 
             {/* Client Information */}
             {/* <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-16">
@@ -410,7 +419,7 @@ const Dashboard: React.FC = () => {
                 transition={{ delay: 0.6 }}
                 className="text-4xl font-bold text-white mb-12 text-center"
               >
-                Your Active Memberships
+                Your Memberships
               </motion.h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

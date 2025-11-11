@@ -15,27 +15,13 @@ interface UsageChartProps {
 }
 
 const UsageChart: React.FC<UsageChartProps> = ({ data }) => {
-  const noSms = !data.sms.total || data.sms.total === 0;
-  const noWhatsapp = !data.whatsapp.total || data.whatsapp.total === 0;
+  const noSms = !data.sms?.total || data.sms.total === 0;
+  const noWhatsapp = !data.whatsapp?.total || data.whatsapp.total === 0;
 
-  // If user is new → show message instead of empty analytics
-    if (noSms && noWhatsapp) {
-    return (
-      <div className="flex justify-center">
-        <div
-          className="w-full max-w-md min-h-[500px] bg-white/5 backdrop-blur-xl 
-                    rounded-3xl p-8 border border-white/10 text-center shadow-2xl 
-                    flex flex-col justify-center"
-        >
-          <h3 className="text-2xl font-bold text-white mb-2">Usage Analytics</h3>
-          <p className="text-gray-300 text-sm">No usage data available yet.</p>
-          <p className="text-gray-400 text-xs mt-1">
-            Start sending messages to see your usage analytics here.
-          </p>
-        </div>
-      </div>
-    );
+  if (noSms && noWhatsapp) {
+    return null;
   }
+  
 
   // Percentages
   const smsPercentage =
