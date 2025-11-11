@@ -47,7 +47,7 @@ const SendSMS: React.FC = () => {
 
   if (!clientData || !clientData.Projects || clientData.Projects.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center px-6 lg:ml-[280px]">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-4">
             You need at least one project to send messages
@@ -214,37 +214,38 @@ const SendSMS: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        onClick={() => navigate("/dashboard")}
-        className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6"
-      >
-        <ArrowLeftIcon className="w-5 h-5" />
-        <span>Back to Dashboard</span>
-      </motion.button>
+    <div className="min-h-screen px-4 lg:px-8 py-8 lg:ml-[280px]">
+      <div className="max-w-4xl mx-auto">
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+          <span>Back to Dashboard</span>
+        </motion.button>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-4">
-          <PaperAirplaneIcon className="w-8 h-8 text-white" />
-        </div>
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-2">
-          Send Message
-        </h1>
-        <p className="text-gray-400">Send notifications using your API</p>
-      </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-4">
+            <PaperAirplaneIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent mb-2">
+            Send Message
+          </h1>
+          <p className="text-gray-400">Send notifications using your API</p>
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 shadow-2xl"
-      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 shadow-2xl"
+        >
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -539,18 +540,6 @@ const SendSMS: React.FC = () => {
                 Response Details
               </h3>
               <div className="space-y-2 text-sm">
-                <div>
-                  <span className="text-gray-400">Status: </span>
-                  <span
-                    className={
-                      response.status === "success"
-                        ? "text-green-400"
-                        : "text-red-400"
-                    }
-                  >
-                    {response.status}
-                  </span>
-                </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-400 font-semibold">Message:</span>
                   <span className="text-red-500 font-bold text-l">
@@ -622,6 +611,7 @@ const SendSMS: React.FC = () => {
           </div>
         )}
       </motion.div>
+      </div>
     </div>
   );
 };

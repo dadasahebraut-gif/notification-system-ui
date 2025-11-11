@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getApiUrl, API_CONFIG } from "../config/api";
+import { DocumentDuplicateIcon } from "@heroicons/react/24/outline";
+ 
 import {
   TagIcon,
   DevicePhoneMobileIcon,
@@ -11,7 +13,7 @@ import {
   XCircleIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-
+ 
 interface Template {
   ID: string;
   ClientID: string;
@@ -26,14 +28,14 @@ interface Template {
   CreatedAt: string;
   UpdatedAt: string;
 }
-
+ 
 const AllTemplates: React.FC = () => {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const clientId = localStorage.getItem("client_id");
-
+ 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
@@ -42,18 +44,18 @@ const AllTemplates: React.FC = () => {
           setLoading(false);
           return;
         }
-
+ 
         const url = `${getApiUrl(
           API_CONFIG.ENDPOINTS.PURPOSES
         )}/filter?client_id=${clientId}`;
         const token = localStorage.getItem("auth_token");
-
+ 
         const res = await axios.get(url, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
+ 
         if (res.data.status === "success") {
           setTemplates(res.data.data || []);
         } else {
@@ -66,10 +68,10 @@ const AllTemplates: React.FC = () => {
         setLoading(false);
       }
     };
-
+ 
     fetchTemplates();
   }, [clientId]);
-
+ 
   const getMediumInfo = (metadata: any) => {
     try {
       const medium = metadata?.medium || "sms";
@@ -96,7 +98,7 @@ const AllTemplates: React.FC = () => {
       };
     }
   };
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center lg:ml-[280px]">
@@ -107,7 +109,7 @@ const AllTemplates: React.FC = () => {
       </div>
     );
   }
-
+ 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center lg:ml-[280px]">
@@ -115,7 +117,7 @@ const AllTemplates: React.FC = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen p-6 lg:ml-[280px]">
       <div className="max-w-7xl mx-auto">
@@ -138,7 +140,7 @@ const AllTemplates: React.FC = () => {
                 </p>
               </div>
             </div>
-
+ 
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -150,7 +152,7 @@ const AllTemplates: React.FC = () => {
             </motion.button>
           </div>
         </motion.div>
-
+ 
         {templates.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -235,10 +237,21 @@ const AllTemplates: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <code className="text-xs text-purple-400 bg-black/20 px-2 py-1 rounded">
-                          {template.TemplateID}
-                        </code>
+                        <div className="flex items-center space-x-2">
+                          <code className="text-xs text-purple-400 bg-black/20 px-2 py-1 rounded">
+                            {template.TemplateID}
+                          </code>
+ 
+                          <button
+                            onClick={() => navigator.clipboard.writeText(template.TemplateID)}
+                            className="p-1 hover:bg-white/10 rounded transition"
+                            title="Copy Template ID"
+                          >
+                            <DocumentDuplicateIcon className="w-4 h-4 text-gray-300 hover:text-white" />
+                          </button>
+                        </div>
                       </td>
+ 
                       <td className="px-6 py-4">
                         <span className="text-gray-300 text-xs capitalize">
                           {template.Type || "N/A"}
@@ -279,5 +292,5 @@ const AllTemplates: React.FC = () => {
     </div>
   );
 };
-
+ 
 export default AllTemplates;
