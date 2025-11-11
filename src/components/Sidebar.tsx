@@ -41,38 +41,44 @@ const Sidebar: React.FC = () => {
   }, []);
 
   const navigationItems = [
-    { path: "/dashboard", name: "Dashboard", icon: ChartBarIcon },
-    {
-      path: "/create-campaign",
-      name: "Campaign",
-      icon: RocketLaunchIcon,
-      subItems: [
-        { path: "/create-campaign", name: "Create Campaign" },
-        { path: "/campaign-list", name: "All Campaigns" },
-      ],
-    },
-    { path: "/create-project", name: "New Project", icon: FolderIcon },
-    { path: "/create-membership", name: "Add Plans", icon: SparklesIcon },
-    { path: "/send-sms", name: "Send SMS", icon: PaperAirplaneIcon },
-    {
-      path: "/create-sender",
-      name: "Sender",
-      icon: UserIcon,
-      subItems: [
-        { path: "/create-sender", name: "Create Sender" },
-        { path: "/all-senders", name: "All Senders" },
-      ],
-    },
-    {
-      path: "/create-purpose",
-      name: "Templates",
-      icon: TagIcon,
-      subItems: [
-        { path: "/create-purpose", name: "Create Template" },
-        { path: "/all-templates", name: "All Templates" },
-      ],
-    },
-  ];
+  { path: "/dashboard", name: "Dashboard", icon: ChartBarIcon },
+
+  {
+    path: "/create-sender",
+    name: "Sender",
+    icon: UserIcon,
+    subItems: [
+      { path: "/create-sender", name: "Create Sender" },
+      { path: "/all-senders", name: "All Senders" },
+    ],
+  },
+
+  {
+    path: "/create-purpose",
+    name: "Templates",
+    icon: TagIcon,
+    subItems: [
+      { path: "/create-purpose", name: "Create Template" },
+      { path: "/all-templates", name: "All Templates" },
+    ],
+  },
+
+  { path: "/send-sms", name: "Send SMS", icon: PaperAirplaneIcon },
+
+  {
+    path: "/create-campaign",
+    name: "Campaign",
+    icon: RocketLaunchIcon,
+    subItems: [
+      { path: "/create-campaign", name: "Create Campaign" },
+      { path: "/campaign-list", name: "All Campaigns" },
+    ],
+  },
+
+  { path: "/create-project", name: "New Project", icon: FolderIcon },
+  { path: "/create-membership", name: "Add Plans", icon: SparklesIcon },
+];
+
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");

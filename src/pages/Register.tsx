@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 // import { useAppDispatch } from "../hooks/redux";
 import { getApiUrl } from "../config/api";
@@ -86,6 +87,7 @@ const Register: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Fetch plans when membership types are selected
   useEffect(() => {
@@ -296,20 +298,23 @@ const Register: React.FC = () => {
         throw new Error(formatServerError(membershipData.error || membershipData.message || "Membership creation failed"));
       }
 
-      // Step 3: Auto-login
-      // Step 3: Registration complete — redirect user to login page
-      setRegistrationSuccess(true);
+          // Step 3: Registration complete
+   setSuccessMessage("Registered successfully! Wait for admin approval. redirecting to sign in..");
 
-      // Wait for success animation/message, then redirect
-      navigate('/login');
+    setTimeout(() => {
+      navigate("/login");
+    }, 3200);
+
+
 
 
 
     } catch (error: any) {
+      setLoading(false);
       console.error("Registration error:", error);
       setError(error.message || "Registration failed. Please try again.");
     }
-    setLoading(false);
+    
   };
 
   const nextStep = () => {
@@ -407,6 +412,26 @@ const Register: React.FC = () => {
               <p className="text-red-400 text-sm">{error}</p>
             </motion.div>
           )}
+
+          {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="mb-6 p-4 rounded-xl border border-green-500/40 
+                      bg-gradient-to-r from-green-500/20 to-emerald-500/20
+                      shadow-lg shadow-green-500/20 backdrop-blur-sm
+                      flex items-start space-x-3"
+          >
+            <div className="p-2 rounded-lg bg-green-500/30">
+              <CheckCircleIcon className="w-5 h-5 text-green-300" />
+            </div>
+            <p className="text-green-300 font-medium text-sm">
+              {successMessage}
+            </p>
+          </motion.div>
+        )}
+
+
 
           <AnimatePresence mode="wait">
             {step === 1 && (

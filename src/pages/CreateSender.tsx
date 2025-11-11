@@ -99,7 +99,7 @@ const CreateSender: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Sender ID */}
           <div>
-            <label className="block text-gray-300 mb-2">Sender ID</label>
+            <label className="block text-gray-300 mb-2">Sender ID *</label>
             <input
               type="text"
               name="sender_id"
@@ -113,7 +113,7 @@ const CreateSender: React.FC = () => {
  
          {/* Type */}
           <div>
-            <label className="block text-gray-300 mb-2">Type</label>
+            <label className="block text-gray-300 mb-2">Type *</label>
             <div className="flex items-center gap-6">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
