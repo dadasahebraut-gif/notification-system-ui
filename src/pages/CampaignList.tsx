@@ -17,7 +17,6 @@ interface Campaign {
   failed: number;
   CreatedAt: string;
   ScheduledAt?: string; // ✅ Add this optional field
-
 }
 
 export default function CampaignList() {
@@ -55,16 +54,12 @@ export default function CampaignList() {
         const data = await response.json();
 
         if (data?.data) {
-        const mappedCampaigns = data.data.map((c: any) => ({
-          ...c,
-          ScheduledAt: c.ScheduleAt || null, // ✅ match backend field
-        }));
-        setCampaigns(mappedCampaigns);
-
-      }
-
-        
-        else {
+          const mappedCampaigns = data.data.map((c: any) => ({
+            ...c,
+            ScheduledAt: c.ScheduleAt || null, // ✅ match backend field
+          }));
+          setCampaigns(mappedCampaigns);
+        } else {
           console.warn("Unexpected API response:", data);
         }
       } catch (err) {
@@ -162,7 +157,6 @@ export default function CampaignList() {
       setTimeout(() => setActionLoading(false), 1500);
     }
   };
-
 
   return (
     <div className="min-h-screen p-6 lg:ml-[280px]">
@@ -318,7 +312,7 @@ export default function CampaignList() {
                         </>
                       )}
 
-                        {c.Status === "scheduled" && (
+                      {c.Status === "scheduled" && (
                         <div className="flex gap-2 justify-center">
                           <button
                             className="px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-md text-xs hover:opacity-90 transition"
@@ -333,12 +327,14 @@ export default function CampaignList() {
                                 alert("Scheduled date not found!");
                                 return;
                               }
-                              handleCancelSchedule(c.ID, new Date(c.ScheduledAt));
+                              handleCancelSchedule(
+                                c.ID,
+                                new Date(c.ScheduledAt)
+                              );
                             }}
                           >
                             Cancel
                           </button>
-
                         </div>
                       )}
 
