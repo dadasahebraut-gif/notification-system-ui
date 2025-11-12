@@ -182,7 +182,7 @@ const CreateCampaign: React.FC = () => {
         {step === 1 && (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-gray-300 mb-2">Campaign Name</label>
+              <label className="block text-gray-300 mb-2">Campaign Name *</label>
               <input
                 type="text"
                 value={campaignName}
@@ -194,7 +194,7 @@ const CreateCampaign: React.FC = () => {
 
             {/* Project Dropdown */}
             <div>
-              <label className="block text-gray-300 mb-2">Select Project</label>
+              <label className="block text-gray-300 mb-2">Select Project *</label>
               <select
                 value={projectId}
                 onChange={handleProjectChange}
@@ -223,7 +223,7 @@ const CreateCampaign: React.FC = () => {
 
             {/* Purpose Dropdown */}
             <div>
-              <label className="block text-gray-300 mb-2">Select Template</label>
+              <label className="block text-gray-300 mb-2">Select Template *</label>
               <select
                 value={purposeId}
                 onChange={(e) => setPurposeId(e.target.value)}
@@ -251,7 +251,7 @@ const CreateCampaign: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-300 mb-2">Description</label>
+              <label className="block text-gray-300 mb-2">Campaign Description *</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -261,7 +261,7 @@ const CreateCampaign: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-300 mb-2">Upload Excel File</label>
+              <label className="block text-gray-300 mb-2">Upload Excel File *</label>
               <label className="block text-gray-400 mb-2 text-xs">The file must contain column mobile_number</label>
               <input
                 type="file"

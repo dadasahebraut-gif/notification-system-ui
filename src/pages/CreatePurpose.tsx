@@ -438,7 +438,7 @@ const CreatePurpose: React.FC = () => {
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 
                      h-32 resize-none"
-          placeholder="Describe what this template is used for and when notifications should be sent..."
+          placeholder="Enter exact template content with variables in {{variable_name}}..."
         />
       </div>
 

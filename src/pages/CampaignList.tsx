@@ -13,7 +13,7 @@ interface Campaign {
   Name: string;
   Status: string;
   TotalCount: number;
-  success: number;
+  ValidCount: number;
   failed: number;
   CreatedAt: string;
   ScheduledAt?: string; // ✅ Add this optional field
@@ -163,7 +163,7 @@ export default function CampaignList() {
       <div className="max-w-7xl mx-auto">
         {/* Loader Overlay */}
         {actionLoading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="fixed inset-0 flex items-center justify-center bg-white/10 backdrop-blur-sm z-50">
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -245,7 +245,7 @@ export default function CampaignList() {
                     Status
                   </th>
                   <th className="px-6 py-4 text-center text-gray-300 font-semibold">
-                    Total
+                    Valid Numbers
                   </th>
                   <th className="px-6 py-4 text-center text-gray-300 font-semibold">
                     Created
@@ -284,7 +284,7 @@ export default function CampaignList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {c.TotalCount || 0}
+                      {c.ValidCount || 0}
                     </td>
                     <td className="px-6 py-4 text-center text-gray-300">
                       {c.CreatedAt
@@ -362,7 +362,7 @@ export default function CampaignList() {
               <h3 className="text-xl font-semibold mb-4 text-center">
                 Schedule Campaign
               </h3>
-
+            <p className="text-xs font-semibold mb-4 text-center text-red-500">Note- your campaign will execute one minute after selected scheduled time.</p>
               {/* Date + Time Picker Section */}
               <div className="mb-4">
                 <label className="block mb-2 text-sm text-gray-300">
