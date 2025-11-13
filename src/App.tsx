@@ -31,6 +31,16 @@ import ClientManagement from "./pages/admin/ClientManagement";
 import SubscriptionManagement from "./pages/admin/SubscriptionManagement";
 import CreatePlan from "./pages/admin/CreatePlan";
 import ViewPlans from "./pages/admin/ViewPlans";
+import ClientDashboard from "./pages/admin/ClientDashboard";
+import ClientCreateSender from "./pages/admin/ClientCreateSender";
+import ClientAllSenders from "./pages/admin/ClientAllSenders";
+import ClientCreateTemplate from "./pages/admin/ClientCreateTemplate";
+import ClientAllTemplates from "./pages/admin/ClientAllTemplates";
+import ClientSendSMS from "./pages/admin/ClientSendSMS";
+import ClientCreateCampaign from "./pages/admin/ClientCreateCampaign";
+import ClientAllCampaigns from "./pages/admin/ClientAllCampaigns";
+import ClientCreateProject from "./pages/admin/ClientCreateProject";
+import ClientCreateMembership from "./pages/admin/ClientCreateMembership";
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, role } = useAppSelector((state) => state.auth);
@@ -175,6 +185,17 @@ const AppContent: React.FC = () => {
             <Route path="subscriptions" element={<SubscriptionManagement />} />
             <Route path="plans" element={<ViewPlans />} />
             <Route path="create-plan" element={<CreatePlan />} />
+            <Route path="client-actions" element={<ClientDashboard />} />
+            <Route path="client-dashboard" element={<ClientDashboard />} />
+            <Route path="client-create-sender" element={<ClientCreateSender />} />
+            <Route path="client-all-senders" element={<ClientAllSenders />} />
+            <Route path="client-create-template" element={<ClientCreateTemplate />} />
+            <Route path="client-all-templates" element={<ClientAllTemplates />} />
+            <Route path="client-send-sms" element={<ClientSendSMS />} />
+            <Route path="client-create-campaign" element={<ClientCreateCampaign />} />
+            <Route path="client-all-campaigns" element={<ClientAllCampaigns />} />
+            <Route path="client-create-project" element={<ClientCreateProject />} />
+            <Route path="client-create-membership" element={<ClientCreateMembership />} />
           </Route>
         </Routes>
       </AnimatePresence>
