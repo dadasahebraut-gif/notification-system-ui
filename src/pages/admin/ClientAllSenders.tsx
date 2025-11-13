@@ -10,12 +10,18 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 
+interface Client {
+  ID: string;
+  Name: string;
+  Description: string;
+  IsActive: boolean;
+}
+
 const ClientAllSenders: React.FC = () => {
   const { token } = useAppSelector((state) => state.auth);
   const [senders, setSenders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const clientId = localStorage.getItem("client_id");
   const [editingSender, setEditingSender] = useState<any | null>(null);
   const [formData, setFormData] = useState({
     sender_id: "",
@@ -23,15 +29,19 @@ const ClientAllSenders: React.FC = () => {
     dlt_entity_principall_id: "",
   });
   const [message, setMessage] = useState("");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [clientsLoading, setClientsLoading] = useState(true);
 
-  const fetchSenders = async () => {
+  const fetchSenders = async (clientId: string) => {
+    if (!clientId) {
+      setSenders([]);
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (!clientId) {
-        setError("Client ID not found.");
-        setLoading(false);
-        return;
-      }
-
+      setLoading(true);
       const url = `${getApiUrl(API_CONFIG.ENDPOINTS.SENDERS)}/filter?client_id=${clientId}`;
 
       const res = await axios.get(url, {
@@ -42,6 +52,7 @@ const ClientAllSenders: React.FC = () => {
 
       if (res.data.status === "success") {
         setSenders(res.data.data || []);
+        setError("");
       } else {
         setError(res.data.message || "Failed to fetch senders.");
       }
@@ -54,8 +65,45 @@ const ClientAllSenders: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSenders();
-  }, [clientId, token]);
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get(
+          "https://platform.shauryatechnosoft.com/notification-api/api/v1/o/clients/list/all",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.status === "success") {
+          const clientsList = response.data.data || [];
+          setClients(clientsList);
+          if (clientsList.length > 0) {
+            setSelectedClientId(clientsList[0].ID);
+            localStorage.setItem("client_id", clientsList[0].ID);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        setError("Failed to fetch clients list.");
+      } finally {
+        setClientsLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, [token]);
+
+  useEffect(() => {
+    if (selectedClientId) {
+      fetchSenders(selectedClientId);
+    }
+  }, [selectedClientId, token]);
+
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newClientId = e.target.value;
+    setSelectedClientId(newClientId);
+    localStorage.setItem("client_id", newClientId);
+  };
 
   const updateSender = async () => {
     if (!editingSender) return;
@@ -126,6 +174,29 @@ const ClientAllSenders: React.FC = () => {
                 <p className="text-gray-400 mt-1">Manage client SMS sender IDs</p>
               </div>
             </div>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-white font-semibold mb-3">Select Client</label>
+            {clientsLoading ? (
+              <div className="flex items-center justify-center py-3">
+                <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                <span className="ml-2 text-gray-400">Loading clients...</span>
+              </div>
+            ) : (
+              <select
+                value={selectedClientId}
+                onChange={handleClientChange}
+                className="w-full max-w-md px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+              >
+                <option value="" className="bg-gray-800">Select a client</option>
+                {clients.map((client) => (
+                  <option key={client.ID} value={client.ID} className="bg-gray-800">
+                    {client.Name} {!client.IsActive && "(Inactive)"}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </motion.div>
 

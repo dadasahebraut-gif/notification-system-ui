@@ -4,6 +4,13 @@ import axios from "axios";
 import { useAppSelector } from "../../hooks/redux";
 import { getApiUrl, API_CONFIG } from "../../config/api";
 
+interface Client {
+  ID: string;
+  Name: string;
+  Description: string;
+  IsActive: boolean;
+}
+
 const ClientCreateSender: React.FC = () => {
   const { token } = useAppSelector((state) => state.auth);
   const [formData, setFormData] = useState({
@@ -14,6 +21,9 @@ const ClientCreateSender: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [clientsLoading, setClientsLoading] = useState(true);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -24,20 +34,54 @@ const ClientCreateSender: React.FC = () => {
     }));
   };
 
+  React.useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get(
+          "https://platform.shauryatechnosoft.com/notification-api/api/v1/o/clients/list/all",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (response.data.status === "success") {
+          const clientsList = response.data.data || [];
+          setClients(clientsList);
+          if (clientsList.length > 0) {
+            setSelectedClientId(clientsList[0].ID);
+            localStorage.setItem("client_id", clientsList[0].ID);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+        setMessage("Failed to fetch clients list.");
+      } finally {
+        setClientsLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, [token]);
+
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newClientId = e.target.value;
+    setSelectedClientId(newClientId);
+    localStorage.setItem("client_id", newClientId);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    const clientId = localStorage.getItem("client_id");
-    if (!clientId) {
-      setMessage("Client ID not found. Please ensure a client is selected.");
+    if (!selectedClientId) {
+      setMessage("Please select a client first.");
       setLoading(false);
       return;
     }
 
     const payload = {
-      client_id: clientId,
+      client_id: selectedClientId,
       sender_id: formData.sender_id,
       type: formData.type,
       dlt_entity_principall_id: formData.dlt_entity_principall_id,
@@ -92,6 +136,30 @@ const ClientCreateSender: React.FC = () => {
           className="backdrop-blur-xl border border-white/10 bg-white/5 rounded-2xl p-8 shadow-2xl"
         >
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-white font-semibold mb-3">Select Client *</label>
+              {clientsLoading ? (
+                <div className="flex items-center justify-center py-3">
+                  <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="ml-2 text-gray-400">Loading clients...</span>
+                </div>
+              ) : (
+                <select
+                  value={selectedClientId}
+                  onChange={handleClientChange}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+                  required
+                >
+                  <option value="" className="bg-gray-800">Select a client</option>
+                  {clients.map((client) => (
+                    <option key={client.ID} value={client.ID} className="bg-gray-800">
+                      {client.Name} {!client.IsActive && "(Inactive)"}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
             <div>
               <label className="block text-white font-semibold mb-3">Sender ID *</label>
               <input
