@@ -165,7 +165,7 @@ const CreatePurpose: React.FC = () => {
 
   // 🔹 Validate Sender Selection (checkbox list)
   if (!formData.senderIds || formData.senderIds.length === 0) {
-    setError("Please select at least one sender.");
+    setError("Note: Please select at least one sender.");
     return false;
   }
 
@@ -428,6 +428,7 @@ const CreatePurpose: React.FC = () => {
                   <label className="block text-sm font-semibold text-gray-300 mb-2">
                     Template Content *
                   </label>
+                  {/* <p className="text-xs text-red-500 pl-2">NOTE- Enter the content of the template, including any variables in the format {{variable_name}}.</p> */}
                   <textarea
                     required
                     value={formData.description}
@@ -438,7 +439,7 @@ const CreatePurpose: React.FC = () => {
                      placeholder-gray-400 focus:outline-none focus:ring-2 
                      focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 
                      h-32 resize-none"
-          placeholder="Enter exact template content with variables in {{variable_name}}..."
+          placeholder="NOTE- Enter the content of the template, including any variables in the format {{variable_name}}..."
         />
       </div>
 
@@ -534,12 +535,12 @@ const CreatePurpose: React.FC = () => {
                               ))}
                             </div>
 
-                            {/* 🔸 Validation message */}
+                            {/* 🔸 Validation message
                             {formData.senderIds.length === 0 && (
-                              <p className="text-red-400 text-sm mt-1">
-                                Please select at least one sender.
+                              <p className="text-gray-400 text-sm mt-1">
+                                Note : Please select at least one sender.
                               </p>
-                            )}
+                            )} */}
                           </>
                         ) : (
                           <p className="text-red-400 text-sm mt-1">
